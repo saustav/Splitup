@@ -1,35 +1,42 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+const STACK = [
+  { name: 'Expo + React Native', role: 'iOS, Android & Web from one codebase' },
+  { name: 'NativeWind', role: 'Tailwind CSS styling' },
+  { name: 'Supabase', role: 'Postgres database, realtime sync & auth' },
+  { name: 'Zustand', role: 'Lightweight global state' },
+  { name: 'Expo Router', role: 'File-based navigation' },
+  { name: 'Expo Notifications', role: 'Push notifications' },
+  { name: 'Khalti & eSewa', role: 'Nepal payment gateways' },
+  { name: 'Vercel', role: 'Web hosting' },
+  { name: 'GitHub', role: 'Version control' },
+];
 
 export default function ModalScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Modal</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/modal.tsx" />
+    <View className="flex-1 bg-white dark:bg-neutral-950">
+      <StatusBar style="auto" />
+      <ScrollView className="flex-1 px-6 pt-12">
+        <Text className="text-2xl font-bold text-neutral-900 dark:text-white">
+          Your stack
+        </Text>
+        <Text className="mt-2 text-neutral-600 dark:text-neutral-400">
+          Everything wired and ready for you to build on.
+        </Text>
 
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+        {STACK.map((item) => (
+          <View
+            key={item.name}
+            className="mt-4 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+          >
+            <Text className="font-semibold text-brand-600">{item.name}</Text>
+            <Text className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+              {item.role}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

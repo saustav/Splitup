@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Splitup",
+    "name": "Split It",
     "slug": "Splitup",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,6 +24,11 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#16a34a",
+      "vapidPublicKey": "YOUR_PUBLIC_KEY_HERE"
+    },
     "plugins": [
       "expo-router",
       [
@@ -32,6 +37,13 @@
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#16a34a"
         }
       ]
     ],
