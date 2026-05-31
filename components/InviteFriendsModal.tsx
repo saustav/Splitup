@@ -181,7 +181,7 @@ export function InviteFriendsModal({
                   <MaterialIcons
                     name={copiedField === 'code' ? 'check-circle' : 'content-copy'}
                     size={16}
-                    color={copiedField === 'code' ? '#006c49' : '#6c7a71'}
+                    color={copiedField === 'code' ? '#1D9E75' : '#6c7a71'}
                   />
                   <Text
                     className={`text-xs font-semibold ${
@@ -236,7 +236,7 @@ export function InviteFriendsModal({
                 <MaterialIcons
                   name={copiedField === 'link' ? 'check-circle' : 'link'}
                   size={18}
-                  color={copiedField === 'link' ? '#006c49' : '#525252'}
+                  color={copiedField === 'link' ? '#1D9E75' : '#525252'}
                 />
                 <Text
                   className={`text-center font-semibold ${

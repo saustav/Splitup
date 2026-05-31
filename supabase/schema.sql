@@ -115,6 +115,10 @@ create policy "Users can add themselves as members"
   on public.group_members for insert
   with check (auth.uid() = user_id);
 
+create policy "Users can leave groups"
+  on public.group_members for delete
+  using (user_id = auth.uid());
+
 create policy "Group members can view profiles"
   on public.profiles for select
   using (public.shares_group_with(id));
@@ -332,6 +336,7 @@ create table public.activity_events (
       'expense_deleted',
       'invite_created',
       'member_joined',
+      'settlement_pending',
       'settlement_completed'
     )
   ),
@@ -431,7 +436,8 @@ create or replace function public.create_expense(
   p_amount numeric,
   p_paid_by uuid default null,
   p_splits jsonb default null,
-  p_category text default 'other'
+  p_category text default 'other',
+  p_expense_date date default null
 )
 returns uuid
 language plpgsql
@@ -443,6 +449,7 @@ declare
   v_expense_id uuid;
   v_currency text;
   v_category text;
+  v_expense_date date;
 begin
   if auth.uid() is null then
     raise exception 'Not authenticated';
@@ -469,15 +476,16 @@ begin
   end if;
 
   v_category := public.normalize_expense_category(p_category);
+  v_expense_date := coalesce(p_expense_date, current_date);
 
   select coalesce(currency, 'USD') into v_currency
   from public.groups where id = p_group_id;
 
   insert into public.expenses (
-    group_id, description, amount, paid_by, created_by, currency, category
+    group_id, description, amount, paid_by, created_by, currency, category, expense_date
   )
   values (
-    p_group_id, trim(p_description), p_amount, v_payer, auth.uid(), v_currency, v_category
+    p_group_id, trim(p_description), p_amount, v_payer, auth.uid(), v_currency, v_category, v_expense_date
   )
   returning id into v_expense_id;
 
@@ -498,7 +506,7 @@ begin
 end;
 $$;
 
-grant execute on function public.create_expense(uuid, text, numeric, uuid, jsonb, text) to authenticated;
+grant execute on function public.create_expense(uuid, text, numeric, uuid, jsonb, text, date) to authenticated;
 
 -- Update expense (payer or creator)
 create or replace function public.update_expense(
@@ -507,7 +515,8 @@ create or replace function public.update_expense(
   p_amount numeric,
   p_splits jsonb default null,
   p_paid_by uuid default null,
-  p_category text default null
+  p_category text default null,
+  p_expense_date date default null
 )
 returns void
 language plpgsql
@@ -565,7 +574,8 @@ begin
     description = trim(p_description),
     amount = p_amount,
     paid_by = v_payer,
-    category = v_category
+    category = v_category,
+    expense_date = coalesce(p_expense_date, expense_date)
   where id = p_expense_id;
 
   delete from public.expense_splits where expense_id = p_expense_id;
@@ -585,7 +595,7 @@ begin
 end;
 $$;
 
-grant execute on function public.update_expense(uuid, text, numeric, jsonb, uuid, text) to authenticated;
+grant execute on function public.update_expense(uuid, text, numeric, jsonb, uuid, text, date) to authenticated;
 
 -- Delete expense (payer only)
 create or replace function public.delete_expense(p_expense_id uuid)
@@ -656,6 +666,26 @@ create policy "Members can view group invites"
     )
   );
 
+create or replace function public.cleanup_expired_group_invites()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_deleted integer;
+begin
+  delete from public.group_invites
+  where expires_at < now()
+     or use_count >= max_uses;
+
+  get diagnostics v_deleted = row_count;
+  return v_deleted;
+end;
+$$;
+
+grant execute on function public.cleanup_expired_group_invites() to authenticated;
+
 create or replace function public.create_group_invite(p_group_id uuid)
 returns text
 language plpgsql
@@ -676,6 +706,10 @@ begin
   ) then
     raise exception 'Not a member of this group';
   end if;
+
+  delete from public.group_invites
+  where group_id = p_group_id
+    and (expires_at < now() or use_count >= max_uses);
 
   v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
 
@@ -846,11 +880,71 @@ begin
   )
   returning id into v_id;
 
+  if p_provider = 'manual' then
+    perform public.log_activity_event(
+      p_group_id,
+      'settlement_pending',
+      'settlement',
+      v_id,
+      'Settlement pending',
+      p_amount,
+      null,
+      jsonb_build_object(
+        'payee_id', p_payee_id,
+        'payer_id', auth.uid(),
+        'provider', p_provider
+      )
+    );
+  end if;
+
   return v_id;
 end;
 $$;
 
 grant execute on function public.create_settlement(uuid, uuid, numeric, text) to authenticated;
+
+create or replace function public.accept_settlement(p_settlement_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.settlements;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  update public.settlements
+  set status = 'completed', completed_at = now()
+  where id = p_settlement_id
+    and payee_id = auth.uid()
+    and status = 'pending'
+  returning * into v_row;
+
+  if v_row.id is null then
+    raise exception 'Settlement not found or already completed';
+  end if;
+
+  perform public.log_activity_event(
+    v_row.group_id,
+    'settlement_completed',
+    'settlement',
+    v_row.id,
+    'Settlement',
+    v_row.amount,
+    null,
+    jsonb_build_object(
+      'payee_id', v_row.payee_id,
+      'payer_id', v_row.payer_id,
+      'provider', v_row.provider
+    )
+  );
+end;
+$$;
+
+grant execute on function public.accept_settlement(uuid) to authenticated;
 
 create or replace function public.complete_settlement(p_settlement_id uuid)
 returns void
@@ -870,6 +964,7 @@ begin
   where id = p_settlement_id
     and payer_id = auth.uid()
     and status = 'pending'
+    and provider in ('khalti', 'esewa')
   returning * into v_row;
 
   if v_row.id is null then

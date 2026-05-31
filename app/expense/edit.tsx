@@ -21,9 +21,13 @@ import {
   updateExpense,
 } from '@/lib/expenses';
 import { fetchGroupById, fetchGroupMembers } from '@/lib/groups';
+import { goBackOrHome } from '@/lib/navigation';
 import { paramString } from '@/lib/routeParams';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
+import { useExpensesStore } from '@/stores/expensesStore';
+import { useGroupsStore } from '@/stores/groupsStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 import type { Expense } from '@/types/expense';
 import type { Group, GroupMember } from '@/types/group';
 
@@ -110,6 +114,7 @@ export default function EditExpenseScreen() {
     amount: number;
     paidById: string;
     category: string;
+    expenseDate: string;
     splits?: { user_id: string; amount_owed: number }[];
   }) {
     if (!expenseId || !canEdit) return;
@@ -124,11 +129,17 @@ export default function EditExpenseScreen() {
         amount: params.amount,
         paidBy: params.paidById,
         category: params.category,
+        expenseDate: params.expenseDate,
         splits: params.splits,
       });
-      router.replace(`/group/${groupId}`);
+      if (groupId) {
+        await useExpensesStore.getState().loadForGroup(groupId);
+        await useGroupsStore.getState().fetchGroups();
+        await usePendingActionsStore.getState().refresh();
+      }
     } catch (e) {
       setError(getErrorMessage(e, 'Failed to update expense'));
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -141,6 +152,11 @@ export default function EditExpenseScreen() {
     try {
       await deleteExpense(expenseId);
       setDeleteConfirmVisible(false);
+      if (groupId) {
+        await useExpensesStore.getState().loadForGroup(groupId);
+        await useGroupsStore.getState().fetchGroups();
+        await usePendingActionsStore.getState().refresh();
+      }
       router.replace(`/group/${groupId}`);
     } catch (e) {
       setError(getErrorMessage(e, 'Failed to delete expense'));
@@ -154,7 +170,7 @@ export default function EditExpenseScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       ) : !canEdit ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">
@@ -162,7 +178,7 @@ export default function EditExpenseScreen() {
             {error ?? 'You can only edit expenses you paid for.'}
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => goBackOrHome(router)}
             className="rounded-lg border border-outline-variant px-lg py-sm"
           >
             <Text className="font-sans-semibold text-label-md text-primary">Go back</Text>
@@ -195,7 +211,7 @@ export default function EditExpenseScreen() {
               currentUserId={user?.id}
               initialExpense={expense}
               onSubmit={handleSubmit}
-              onCancel={() => router.back()}
+              onCancel={() => goBackOrHome(router)}
               onDelete={() => setDeleteConfirmVisible(true)}
               isSubmitting={isSubmitting}
               error={error}
@@ -208,7 +224,7 @@ export default function EditExpenseScreen() {
             {error ?? 'Could not load expense details.'}
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => goBackOrHome(router)}
             className="rounded-lg border border-outline-variant px-lg py-sm"
           >
             <Text className="font-sans-semibold text-label-md text-primary">Go back</Text>

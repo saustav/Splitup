@@ -19,9 +19,13 @@ import {
 } from '@/lib/notifications';
 import { createExpense } from '@/lib/expenses';
 import { fetchGroupMembers, fetchUserGroups } from '@/lib/groups';
+import { goBackOrHome } from '@/lib/navigation';
 import { getErrorMessage } from '@/lib/errors';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
+import { useExpensesStore } from '@/stores/expensesStore';
+import { useGroupsStore } from '@/stores/groupsStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 import type { Group, GroupMember } from '@/types/group';
 
 export default function AddExpenseScreen() {
@@ -108,6 +112,7 @@ export default function AddExpenseScreen() {
     amount: number;
     paidById: string;
     category: string;
+    expenseDate: string;
     splits?: { user_id: string; amount_owed: number }[];
   }) {
     if (!groupId || !user?.id) {
@@ -125,8 +130,12 @@ export default function AddExpenseScreen() {
         amount: params.amount,
         paidBy: params.paidById,
         category: params.category,
+        expenseDate: params.expenseDate,
         splits: params.splits,
       });
+      await useExpensesStore.getState().loadForGroup(groupId);
+      await useGroupsStore.getState().fetchGroups();
+      await usePendingActionsStore.getState().refresh();
       router.replace(`/group/${groupId}`);
     } catch (e) {
       setError(getErrorMessage(e, 'Failed to save expense'));
@@ -145,11 +154,11 @@ export default function AddExpenseScreen() {
 
       {!isSupabaseConfigured ? (
         <View className="flex-1 items-center justify-center px-container-margin">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       ) : isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       ) : groups.length === 0 ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">
@@ -192,7 +201,7 @@ export default function AddExpenseScreen() {
               members={members}
               currentUserId={user?.id}
               onSubmit={handleSubmit}
-              onCancel={() => router.back()}
+              onCancel={() => goBackOrHome(router)}
               isSubmitting={isSubmitting}
               error={error}
             />

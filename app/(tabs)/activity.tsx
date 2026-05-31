@@ -1,8 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   RefreshControl,
   ScrollView,
   Text,
@@ -23,15 +23,15 @@ import {
   type ActivityItem,
 } from '@/lib/activity';
 import { getErrorMessage } from '@/lib/errors';
-import {
-  getPushNotificationHelpMessage,
-  registerForPushNotifications,
-} from '@/lib/notifications';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 
 export default function ActivityScreen() {
   const user = useAuthStore((s) => s.user);
+  const notificationCount = usePendingActionsStore((s) => s.totalCount);
+  const openNotifications = usePendingActionsStore((s) => s.openSheet);
+  const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
 
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,9 +65,12 @@ export default function ActivityScreen() {
     [user?.id]
   );
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load(true);
+      refreshPendingActions();
+    }, [load, refreshPendingActions]),
+  );
 
   useEffect(() => {
     if (!user?.id || !isSupabaseConfigured) return;
@@ -103,24 +106,16 @@ export default function ActivityScreen() {
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     load(true);
-  }, [load]);
-
-  async function handleEnableNotifications() {
-    const token = await registerForPushNotifications();
-    Alert.alert(
-      token ? 'Notifications enabled' : 'Could not enable notifications',
-      token
-        ? 'Your device is registered for expense alerts.'
-        : getPushNotificationHelpMessage()
-    );
-  }
+    refreshPendingActions();
+  }, [load, refreshPendingActions]);
 
   return (
     <View className="flex-1 bg-background">
       <TopAppBar
         title="Activity Feed"
-        hasNotifications
-        onNotificationsPress={handleEnableNotifications}
+        showNotifications
+        notificationCount={notificationCount}
+        onNotificationsPress={openNotifications}
       />
 
       <ScrollView
@@ -138,8 +133,8 @@ export default function ActivityScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#006c49"
-            colors={['#006c49']}
+            tintColor="#1D9E75"
+            colors={['#1D9E75']}
             title={isRefreshing ? 'Refreshing…' : undefined}
           />
         }
@@ -171,7 +166,7 @@ export default function ActivityScreen() {
           <View className="flex-1 gap-stack-gap">
             {isLoading ? (
               <View className="items-center py-16">
-                <ActivityIndicator size="large" color="#006c49" />
+                <ActivityIndicator size="large" color="#1D9E75" />
               </View>
             ) : error ? (
               <View className="rounded-xl bg-error-container p-md">

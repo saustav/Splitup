@@ -16,7 +16,12 @@ import {
   type ExpenseCategoryId,
 } from '@/constants/expenseCategories';
 import { ExpenseCategoryPicker } from '@/components/ExpenseCategoryPicker';
+import { ExpenseDatePicker } from '@/components/ExpenseDatePicker';
+import { AutosaveIndicator } from '@/components/AutosaveIndicator';
+import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { useAutosaveStatus } from '@/hooks/useAutosaveStatus';
 import { currencyInputLabel, formatMoney, parseAmount } from '@/lib/currency';
+import { today, toISODateString } from '@/lib/dates';
 import { platformShadow } from '@/lib/platformShadow';
 import { expenseToFormState, type SplitMode } from '@/lib/expenseForm';
 import { memberDisplayName } from '@/lib/members';
@@ -29,6 +34,7 @@ export type AddExpenseSubmitParams = {
   amount: number;
   paidById: string;
   category: ExpenseCategoryId;
+  expenseDate: string;
   splits?: ExpenseSplitInput[];
 };
 
@@ -83,16 +89,19 @@ export function AddExpenseForm({
   error?: string | null;
 }) {
   const isEdit = mode === 'edit';
+  const autosaveStatus = useAutosaveStatus(isEdit && isSubmitting);
   const [description, setDescription] = useState('');
   const [amountText, setAmountText] = useState('');
   const [paidById, setPaidById] = useState('');
   const [category, setCategory] = useState<ExpenseCategoryId>(DEFAULT_EXPENSE_CATEGORY);
+  const [expenseDate, setExpenseDate] = useState(() => toISODateString(today()));
   const [splitMode, setSplitMode] = useState<SplitMode>('equal');
   const [includedIds, setIncludedIds] = useState<Set<string>>(new Set());
   const [customSplits, setCustomSplits] = useState<Record<string, string>>({});
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [payerPickerOpen, setPayerPickerOpen] = useState(false);
   const editSeededForId = useRef<string | null>(null);
+  const autosaveReady = useRef(false);
 
   const selectedGroup = groups.find((g) => g.id === groupId);
   const currencyCode =
@@ -115,6 +124,7 @@ export function AddExpenseForm({
         setAmountText(seeded.amountText);
         setPaidById(seeded.paidById);
         setCategory(seeded.category);
+        setExpenseDate(seeded.expenseDate);
         setSplitMode(seeded.splitMode);
         setIncludedIds(seeded.includedIds);
         setCustomSplits(seeded.customSplits);
@@ -125,6 +135,7 @@ export function AddExpenseForm({
     editSeededForId.current = null;
     setPaidById(currentUserId ?? members[0]?.user_id ?? '');
     setCategory(DEFAULT_EXPENSE_CATEGORY);
+    setExpenseDate(toISODateString(today()));
     const ids = new Set(members.map((m) => m.user_id));
     setIncludedIds(ids);
     const initial: Record<string, string> = {};
@@ -133,6 +144,29 @@ export function AddExpenseForm({
     }
     setCustomSplits(initial);
   }, [members, currentUserId, isEdit, initialExpense]);
+
+  useEffect(() => {
+    if (!isEdit || !initialExpense) {
+      autosaveReady.current = false;
+      return;
+    }
+
+    autosaveReady.current = false;
+    const timer = setTimeout(() => {
+      autosaveReady.current = true;
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [isEdit, initialExpense?.id]);
+
+  const includedKey = useMemo(
+    () => [...includedIds].sort().join(','),
+    [includedIds]
+  );
+  const customSplitsKey = useMemo(
+    () => JSON.stringify(customSplits),
+    [customSplits]
+  );
 
   const totalAmount = parseAmount(amountText) ?? 0;
   const includedMembers = members.filter((m) => includedIds.has(m.user_id));
@@ -214,6 +248,7 @@ export function AddExpenseForm({
       amount,
       paidById,
       category,
+      expenseDate,
       splits: buildSplits(),
     });
   }
@@ -226,6 +261,28 @@ export function AddExpenseForm({
     description.trim().length > 0 &&
     totalAmount > 0 &&
     splitValid;
+
+  const scheduleAutosave = useDebouncedCallback(() => {
+    handleSubmit();
+  }, 800);
+
+  useEffect(() => {
+    if (!isEdit || !autosaveReady.current || isSubmitting || !canSubmit) return;
+    scheduleAutosave();
+  }, [
+    isEdit,
+    isSubmitting,
+    canSubmit,
+    description,
+    amountText,
+    paidById,
+    category,
+    expenseDate,
+    splitMode,
+    includedKey,
+    customSplitsKey,
+    scheduleAutosave,
+  ]);
 
   return (
     <View className="gap-lg">
@@ -283,6 +340,17 @@ export function AddExpenseForm({
                 className="rounded-lg border border-outline-variant bg-background py-sm pl-10 pr-3 font-sans text-body-lg text-on-surface"
               />
             </View>
+          </View>
+
+          <View className="gap-xs">
+            <Text className="font-sans-semibold text-label-md text-on-surface-variant">
+              Date
+            </Text>
+            <ExpenseDatePicker
+              value={expenseDate}
+              onChange={setExpenseDate}
+              disabled={isSubmitting}
+            />
           </View>
 
           <View className="gap-xs">
@@ -358,7 +426,7 @@ export function AddExpenseForm({
                 : 'border-outline-variant bg-surface-container'
             }`}
           >
-            <MaterialIcons name="pie-chart" size={16} color="#006c49" />
+            <MaterialIcons name="pie-chart" size={16} color="#1D9E75" />
             <Text className="font-sans-semibold text-label-md text-on-surface">Equally</Text>
           </Pressable>
           <Pressable
@@ -370,7 +438,7 @@ export function AddExpenseForm({
                 : 'border-outline-variant bg-surface-container'
             }`}
           >
-            <MaterialIcons name="tune" size={16} color="#006c49" />
+            <MaterialIcons name="tune" size={16} color="#1D9E75" />
             <Text className="font-sans-semibold text-label-md text-on-surface">Custom</Text>
           </Pressable>
         </View>
@@ -499,31 +567,48 @@ export function AddExpenseForm({
             </Text>
           </Pressable>
         ) : null}
-        <View className="flex-row justify-end gap-md">
-          <Pressable
-            onPress={onCancel}
-            disabled={isSubmitting}
-            className="rounded-lg border border-outline-variant px-xl py-sm active:bg-surface-container"
-          >
-            <Text className="font-sans-semibold text-label-md text-primary">Cancel</Text>
-          </Pressable>
-          <Pressable
-            onPress={handleSubmit}
-            disabled={isSubmitting || !canSubmit}
-            className="flex-row items-center gap-xs rounded-lg bg-primary-container px-xl py-sm shadow-sm active:opacity-95 disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <>
-                <MaterialIcons name="check" size={18} color="#ffffff" />
-                <Text className="font-sans-semibold text-label-md text-on-primary">
-                  {isEdit ? 'Save changes' : 'Save'}
-                </Text>
-              </>
-            )}
-          </Pressable>
-        </View>
+        {isEdit ? (
+          <View className="flex-row items-center justify-between">
+            <Pressable
+              onPress={onCancel}
+              disabled={isSubmitting}
+              className="rounded-lg border border-outline-variant px-xl py-sm active:bg-surface-container"
+            >
+              <Text className="font-sans-semibold text-label-md text-primary">
+                Done
+              </Text>
+            </Pressable>
+            <AutosaveIndicator status={autosaveStatus} />
+          </View>
+        ) : (
+          <View className="flex-row justify-end gap-md">
+            <Pressable
+              onPress={onCancel}
+              disabled={isSubmitting}
+              className="rounded-lg border border-outline-variant px-xl py-sm active:bg-surface-container"
+            >
+              <Text className="font-sans-semibold text-label-md text-primary">
+                Cancel
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleSubmit}
+              disabled={isSubmitting || !canSubmit}
+              className="flex-row items-center gap-xs rounded-lg bg-primary-container px-xl py-sm shadow-sm active:opacity-95 disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <>
+                  <MaterialIcons name="add" size={18} color="#ffffff" />
+                  <Text className="font-sans-semibold text-label-md text-on-primary">
+                    Add expense
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        )}
       </View>
 
       {/* Payer picker */}

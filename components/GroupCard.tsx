@@ -3,6 +3,11 @@ import { Pressable, Text, View } from 'react-native';
 
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { getCurrencyByCode } from '@/constants/currencies';
+import {
+  balanceTone,
+  groupCardStatusLabel,
+  isEffectivelyZero,
+} from '@/lib/balanceDisplay';
 import { formatMoneyCompact } from '@/lib/currency';
 import { groupIconForName } from '@/lib/groupDisplay';
 import { platformShadow } from '@/lib/platformShadow';
@@ -11,16 +16,23 @@ import type { Group } from '@/types/group';
 type GroupCardProps = {
   group: Group;
   netBalance?: number;
+  /** Incoming manual payments waiting for this user's confirmation. */
+  pendingActionCount?: number;
   onPress: () => void;
 };
 
-export function GroupCard({ group, netBalance, onPress }: GroupCardProps) {
-  const owes = netBalance !== undefined && netBalance < -0.01;
-  const owed = netBalance !== undefined && netBalance > 0.01;
-
-  const statusLabel = owes ? 'You owe' : owed ? 'You are owed' : 'Pending';
-  const statusColor = owes ? 'text-error' : owed ? 'text-primary' : 'text-on-surface-variant';
-  const amountColor = owes ? 'text-error' : owed ? 'text-primary' : 'text-on-surface';
+export function GroupCard({
+  group,
+  netBalance,
+  pendingActionCount = 0,
+  onPress,
+}: GroupCardProps) {
+  const tone =
+    netBalance !== undefined ? balanceTone(netBalance) : null;
+  const statusLabel =
+    netBalance !== undefined ? groupCardStatusLabel(netBalance) : '';
+  const showConverted =
+    netBalance !== undefined && tone && !isEffectivelyZero(netBalance);
 
   return (
     <Pressable
@@ -29,8 +41,19 @@ export function GroupCard({ group, netBalance, onPress }: GroupCardProps) {
       style={platformShadow('card')}
     >
       <View className="flex-row items-center gap-md">
-        <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-container">
-          <MaterialIcons name={groupIconForName(group.name)} size={24} color="#006c49" />
+        <View className="relative">
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-container">
+            <MaterialIcons
+              name={groupIconForName(group.name)}
+              size={24}
+              color={tone?.groupIconColor ?? '#1D9E75'}
+            />
+          </View>
+          {pendingActionCount > 0 ? (
+            <View className="absolute -right-0.5 -top-0.5 min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-surface-container-lowest bg-error px-0.5">
+              <MaterialIcons name="notifications" size={10} color="#ffffff" />
+            </View>
+          ) : null}
         </View>
         <View>
           <Text className="font-sans-semibold text-body-lg text-on-surface">
@@ -41,20 +64,46 @@ export function GroupCard({ group, netBalance, onPress }: GroupCardProps) {
             {' · '}
             {getCurrencyByCode(group.currency)?.flag ?? ''} {group.currency}
           </Text>
+          {pendingActionCount > 0 ? (
+            <Text className="mt-0.5 font-sans-semibold text-label-md text-error">
+              {pendingActionCount === 1
+                ? 'Confirm payment'
+                : `${pendingActionCount} payments to confirm`}
+            </Text>
+          ) : null}
         </View>
       </View>
 
-      {netBalance !== undefined && (
+      {netBalance !== undefined && tone ? (
         <View className="items-end">
-          <Text className={`font-sans-semibold text-label-md ${statusColor} mb-xs`}>
-            {statusLabel}
-          </Text>
-          <Text className={`font-sans-medium text-numeric-data ${amountColor}`}>
-            {formatMoneyCompact(netBalance, group.currency)}
-          </Text>
-          <ConvertedAmountLabel amount={netBalance} fromCurrency={group.currency} />
+          <View className="mb-xs flex-row items-center gap-0.5">
+            <MaterialIcons
+              name={tone.statusIcon}
+              size={16}
+              color={tone.groupListStatusIconColor}
+            />
+            <Text
+              className={`font-sans-semibold text-label-md ${tone.listStatusText}`}
+            >
+              {statusLabel}
+            </Text>
+          </View>
+          {!tone.settled ? (
+            <Text
+              className={`font-sans-medium text-numeric-data ${tone.listAmountText}`}
+            >
+              {formatMoneyCompact(netBalance, group.currency)}
+            </Text>
+          ) : null}
+          {showConverted ? (
+            <ConvertedAmountLabel
+              amount={netBalance}
+              fromCurrency={group.currency}
+              className={`font-sans text-label-md ${tone.convertedHintText}`}
+            />
+          ) : null}
         </View>
-      )}
+      ) : null}
     </Pressable>
   );
 }

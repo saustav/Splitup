@@ -142,8 +142,8 @@ export function isGroupCreator(
   return Boolean(userId && group.created_by === userId);
 }
 
-/** Creator or group owner role may delete the group (matches DB RLS). */
-export function canDeleteGroup(
+/** Creator or group owner role may manage the group (matches DB RLS). */
+export function isGroupOwner(
   group: Pick<Group, "created_by">,
   userId: string | undefined,
   members: { user_id: string; role: string }[],
@@ -153,6 +153,30 @@ export function canDeleteGroup(
   return members.some((m) => m.user_id === userId && m.role === "owner");
 }
 
+export function canDeleteGroup(
+  group: Pick<Group, "created_by">,
+  userId: string | undefined,
+  members: { user_id: string; role: string }[],
+): boolean {
+  return isGroupOwner(group, userId, members);
+}
+
+export function canRenameGroup(
+  group: Pick<Group, "created_by">,
+  userId: string | undefined,
+  members: { user_id: string; role: string }[],
+): boolean {
+  return isGroupOwner(group, userId, members);
+}
+
+export function canLeaveGroup(
+  userId: string | undefined,
+  members: { user_id: string }[],
+): boolean {
+  if (!userId) return false;
+  return members.some((m) => m.user_id === userId);
+}
+
 /** Deletes a group. Only the creator (owner) can delete — enforced by RLS. */
 export async function deleteGroup(groupId: string): Promise<void> {
   if (!isSupabaseConfigured) {
@@ -160,6 +184,63 @@ export async function deleteGroup(groupId: string): Promise<void> {
   }
 
   const { error } = await supabase.from("groups").delete().eq("id", groupId);
+
+  if (error) throw error;
+}
+
+export async function renameGroup(
+  groupId: string,
+  name: string,
+): Promise<Group> {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured");
+  }
+
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("Group name is required");
+  }
+
+  const { data, error } = await supabase
+    .from("groups")
+    .update({ name: trimmed })
+    .eq("id", groupId)
+    .select("id, name, currency, created_by, created_at")
+    .single();
+
+  if (error) throw error;
+
+  const { count } = await supabase
+    .from("group_members")
+    .select("*", { count: "exact", head: true })
+    .eq("group_id", groupId);
+
+  return {
+    ...data,
+    currency: data.currency ?? "USD",
+    member_count: count ?? 0,
+  };
+}
+
+/** Removes the signed-in user from the group. */
+export async function leaveGroup(groupId: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured");
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const { error } = await supabase
+    .from("group_members")
+    .delete()
+    .eq("group_id", groupId)
+    .eq("user_id", user.id);
 
   if (error) throw error;
 }

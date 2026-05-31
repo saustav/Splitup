@@ -7,7 +7,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { LogBox, Platform } from 'react-native';
@@ -34,6 +34,9 @@ export default function RootLayout() {
   const initialize = useAuthStore((s) => s.initialize);
   const isLoading = useAuthStore((s) => s.isLoading);
   const session = useAuthStore((s) => s.session);
+  const pathname = usePathname();
+  const isOAuthCallback =
+    pathname === '/auth/callback' || pathname?.endsWith('/auth/callback');
 
   useEffect(() => {
     if (error) throw error;
@@ -49,7 +52,7 @@ export default function RootLayout() {
     }
   }, [loaded, isLoading]);
 
-  if (!loaded || isLoading) {
+  if ((!loaded || isLoading) && !isOAuthCallback) {
     return <LoadingScreen />;
   }
 

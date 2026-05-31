@@ -1,8 +1,7 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -15,14 +14,11 @@ import { GroupCard } from '@/components/GroupCard';
 import { TopAppBar } from '@/components/TopAppBar';
 import { useProfileDisplayCurrency } from '@/hooks/useProfileDisplayCurrency';
 import { fetchDashboardSummary, type GroupBalanceSummary } from '@/lib/dashboard';
-import { convertCurrencyBatch } from '@/lib/exchangeRates';
-import {
-  getPushNotificationHelpMessage,
-  registerForPushNotifications,
-} from '@/lib/notifications';
+import { convertCurrencyBatch } from '@/lib/currency';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { useGroupsStore } from '@/stores/groupsStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -38,9 +34,14 @@ export default function DashboardScreen() {
   const [isConvertingTotal, setIsConvertingTotal] = useState(false);
   const { defaultCurrency, showConverted } = useProfileDisplayCurrency(user?.id);
   const openCreateGroupModal = useGroupsStore((s) => s.openCreateGroupModal);
+  const storeGroups = useGroupsStore((s) => s.groups);
   const fetchGroups = useGroupsStore((s) => s.fetchGroups);
   const subscribe = useGroupsStore((s) => s.subscribe);
   const unsubscribe = useGroupsStore((s) => s.unsubscribe);
+  const notificationCount = usePendingActionsStore((s) => s.totalCount);
+  const countByGroupId = usePendingActionsStore((s) => s.countByGroupId);
+  const openNotifications = usePendingActionsStore((s) => s.openSheet);
+  const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
 
   const loadDashboard = useCallback(
     async (silent = false) => {
@@ -64,11 +65,17 @@ export default function DashboardScreen() {
   );
 
   useEffect(() => {
-    fetchGroups();
     subscribe();
-    loadDashboard();
     return () => unsubscribe();
-  }, [fetchGroups, subscribe, unsubscribe, loadDashboard]);
+  }, [subscribe, unsubscribe]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGroups();
+      loadDashboard(true);
+      refreshPendingActions();
+    }, [fetchGroups, loadDashboard, refreshPendingActions])
+  );
 
   useEffect(() => {
     if (!showConverted || summary.groupBalances.length === 0) {
@@ -116,25 +123,46 @@ export default function DashboardScreen() {
     setIsRefreshing(true);
     fetchGroups();
     loadDashboard(true);
-  }, [fetchGroups, loadDashboard]);
+    refreshPendingActions();
+  }, [fetchGroups, loadDashboard, refreshPendingActions]);
 
-  async function handleEnableNotifications() {
-    const token = await registerForPushNotifications();
-    Alert.alert(
-      token ? 'Notifications enabled' : 'Could not enable notifications',
-      token
-        ? 'Your device is registered for expense alerts.'
-        : getPushNotificationHelpMessage()
+  const activeGroups = useMemo(() => {
+    const balanceById = Object.fromEntries(
+      summary.groupBalances.map((item) => [item.group.id, item.netBalance])
     );
-  }
+    const merged = new Map<string, GroupBalanceSummary>();
 
-  const activeGroups = summary.groupBalances.slice(0, 5);
+    for (const group of storeGroups) {
+      merged.set(group.id, {
+        group,
+        netBalance: balanceById[group.id] ?? 0,
+      });
+    }
+
+    for (const item of summary.groupBalances) {
+      if (!merged.has(item.group.id)) {
+        merged.set(item.group.id, item);
+      }
+    }
+
+    return [...merged.values()]
+      .sort(
+        (a, b) =>
+          new Date(b.group.created_at).getTime() -
+          new Date(a.group.created_at).getTime()
+      )
+      .slice(0, 5);
+  }, [storeGroups, summary.groupBalances]);
+
+  const hasNoGroups =
+    storeGroups.length === 0 && summary.groupBalances.length === 0;
 
   return (
     <View className="flex-1 bg-background">
       <TopAppBar
-        hasNotifications
-        onNotificationsPress={handleEnableNotifications}
+        showNotifications
+        notificationCount={notificationCount}
+        onNotificationsPress={openNotifications}
       />
 
       {!isSupabaseConfigured ? (
@@ -143,9 +171,9 @@ export default function DashboardScreen() {
             Add Supabase keys to .env to sync groups and balances.
           </Text>
         </View>
-      ) : isLoading && summary.groupBalances.length === 0 ? (
+      ) : isLoading && hasNoGroups ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       ) : (
         <ScrollView
@@ -159,7 +187,7 @@ export default function DashboardScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#006c49"
+              tintColor="#1D9E75"
             />
           }
         >
@@ -188,7 +216,7 @@ export default function DashboardScreen() {
               </Pressable>
             </View>
 
-            {activeGroups.length === 0 ? (
+            {hasNoGroups ? (
               <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest py-12">
                 <Text className="font-sans-semibold text-body-lg text-on-surface">
                   No groups yet
@@ -222,6 +250,7 @@ export default function DashboardScreen() {
                     key={group.id}
                     group={group}
                     netBalance={netBalance}
+                    pendingActionCount={countByGroupId[group.id] ?? 0}
                     onPress={() => router.push(`/group/${group.id}`)}
                   />
                 ))}

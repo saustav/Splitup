@@ -1,5 +1,5 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
@@ -14,14 +14,28 @@ import { BalanceSummary } from "@/components/BalanceSummary";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ExpenseCard } from "@/components/ExpenseCard";
 import { GroupDetailHeader } from "@/components/GroupDetailHeader";
+import { GroupOptionsSheet } from "@/components/GroupOptionsSheet";
 import { InviteFriendsModal } from "@/components/InviteFriendsModal";
+import { RenameGroupModal } from "@/components/RenameGroupModal";
+import {
+  PendingSettlementsSection,
+  useEnrichedPendingSettlements,
+} from "@/components/PendingSettlementsSection";
 import { TopAppBar } from "@/components/TopAppBar";
-import { canDeleteGroup, fetchGroupById } from "@/lib/groups";
+import { SETTLE_UP_ENABLED } from "@/constants/app";
+import {
+  canDeleteGroup,
+  canLeaveGroup,
+  canRenameGroup,
+  fetchGroupById,
+} from "@/lib/groups";
+import { memberDisplayName } from "@/lib/members";
 import { platformShadow } from "@/lib/platformShadow";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
 import { useExpensesStore } from "@/stores/expensesStore";
 import { useGroupsStore } from "@/stores/groupsStore";
+import { usePendingActionsStore } from "@/stores/pendingActionsStore";
 import type { Group } from "@/types/group";
 
 function SectionHeader({
@@ -54,20 +68,39 @@ export default function GroupDetailScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const deleteGroup = useGroupsStore((s) => s.deleteGroup);
+  const renameGroup = useGroupsStore((s) => s.renameGroup);
+  const leaveGroup = useGroupsStore((s) => s.leaveGroup);
+  const fetchGroups = useGroupsStore((s) => s.fetchGroups);
   const [group, setGroup] = useState<Group | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
   const [inviteVisible, setInviteVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [renameVisible, setRenameVisible] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [leaveConfirmVisible, setLeaveConfirmVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const expenses = useExpensesStore((s) => s.expenses);
   const members = useExpensesStore((s) => s.members);
   const balances = useExpensesStore((s) => s.balances);
+  const pendingSettlements = useExpensesStore((s) => s.pendingSettlements);
+  const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
+  const groupPendingCount = usePendingActionsStore((s) =>
+    id ? (s.countByGroupId[id] ?? 0) : 0
+  );
+  const openNotifications = usePendingActionsStore((s) => s.openSheet);
 
-  const showDeleteGroup = group
+  const canDelete = group
     ? canDeleteGroup(group, user?.id, members)
     : false;
+  const canRename = group
+    ? canRenameGroup(group, user?.id, members)
+    : false;
+  const canLeave = canLeaveGroup(user?.id, members);
   const isLoading = useExpensesStore((s) => s.isLoading);
   const error = useExpensesStore((s) => s.error);
   const loadForGroup = useExpensesStore((s) => s.loadForGroup);
@@ -79,6 +112,19 @@ export default function GroupDetailScreen() {
     if (!user?.id) return 0;
     return balances.find((b) => b.user_id === user.id)?.net_balance ?? 0;
   }, [balances, user?.id]);
+
+  const memberNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const m of members) {
+      map[m.user_id] = memberDisplayName(m);
+    }
+    return map;
+  }, [members]);
+
+  const enrichedPending = useEnrichedPendingSettlements(
+    pendingSettlements,
+    balances,
+  );
 
   const loadGroupMeta = useCallback(async () => {
     if (!id || !isSupabaseConfigured) return null;
@@ -115,17 +161,24 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     if (!id) return;
 
-    loadAll();
     subscribe(id);
 
     return () => {
       unsubscribe();
       reset();
     };
-  }, [id, loadAll, subscribe, unsubscribe, reset]);
+  }, [id, subscribe, unsubscribe, reset]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) return;
+      void loadAll({ silent: true });
+      void refreshPendingActions();
+    }, [id, loadAll, refreshPendingActions]),
+  );
 
   async function performDeleteGroup() {
-    if (!id || !group || !showDeleteGroup) return;
+    if (!id || !group || !canDelete) return;
 
     setIsDeleting(true);
     setPageError(null);
@@ -134,9 +187,42 @@ export default function GroupDetailScreen() {
     setDeleteConfirmVisible(false);
 
     if (!deleteError) {
+      await fetchGroups();
       router.replace("/(tabs)");
     } else {
       setPageError(deleteError);
+    }
+  }
+
+  async function performLeaveGroup() {
+    if (!id || !canLeave) return;
+
+    setIsLeaving(true);
+    setPageError(null);
+    const leaveError = await leaveGroup(id);
+    setIsLeaving(false);
+    setLeaveConfirmVisible(false);
+
+    if (!leaveError) {
+      await fetchGroups();
+      router.replace("/(tabs)");
+    } else {
+      setPageError(leaveError);
+    }
+  }
+
+  async function handleRenameGroup(name: string) {
+    if (!id || !canRename) return;
+
+    setIsRenaming(true);
+    setRenameError(null);
+    const updated = await renameGroup(id, name);
+    setIsRenaming(false);
+
+    if (updated) {
+      setGroup(updated);
+    } else {
+      setRenameError(useGroupsStore.getState().error ?? "Failed to rename group");
     }
   }
 
@@ -149,7 +235,7 @@ export default function GroupDetailScreen() {
       <View className="flex-1 bg-background">
         <TopAppBar title="Group" showBack />
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       </View>
     );
@@ -174,7 +260,11 @@ export default function GroupDetailScreen() {
       <TopAppBar
         title={group.name}
         showBack
+        showNotifications={groupPendingCount > 0}
+        notificationCount={groupPendingCount}
+        onNotificationsPress={openNotifications}
         onInvitePress={() => setInviteVisible(true)}
+        onMenuPress={() => setMenuVisible(true)}
       />
 
       <ScrollView
@@ -192,7 +282,7 @@ export default function GroupDetailScreen() {
           <RefreshControl
             refreshing={isLoading && !pageLoading}
             onRefresh={() => loadAll({ silent: true })}
-            tintColor="#006c49"
+            tintColor="#1D9E75"
           />
         }
       >
@@ -203,16 +293,33 @@ export default function GroupDetailScreen() {
           expenseCount={expenses.length}
         />
 
-        <Pressable
-          onPress={() => router.push(`/group/${id}/settle`)}
-          className="flex-row items-center justify-center gap-xs rounded-xl bg-primary py-md active:opacity-90"
-          style={platformShadow("card")}
-        >
-          <MaterialIcons name="payments" size={20} color="#ffffff" />
-          <Text className="font-sans-semibold text-body-md text-on-primary">
-            Settle up
-          </Text>
-        </Pressable>
+        {SETTLE_UP_ENABLED ? (
+          <Pressable
+            onPress={() => router.push(`/group/${id}/settle`)}
+            className="flex-row items-center justify-center gap-xs rounded-xl bg-primary py-md active:opacity-90"
+            style={platformShadow("card")}
+          >
+            <MaterialIcons name="payments" size={20} color="#ffffff" />
+            <Text className="font-sans-semibold text-body-md text-on-primary">
+              Settle up
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {SETTLE_UP_ENABLED && enrichedPending.length > 0 ? (
+          <View>
+            <SectionHeader title="Settlements" />
+            <PendingSettlementsSection
+              settlements={enrichedPending}
+              currentUserId={user?.id}
+              currencyCode={group.currency}
+              onUpdated={async () => {
+                await loadForGroup(id!);
+                await refreshPendingActions();
+              }}
+            />
+          </View>
+        ) : null}
 
         <View>
           <SectionHeader title="Balances" />
@@ -227,12 +334,12 @@ export default function GroupDetailScreen() {
           />
           {isLoading && expenses.length === 0 ? (
             <View className="items-center py-12">
-              <ActivityIndicator size="large" color="#006c49" />
+              <ActivityIndicator size="large" color="#1D9E75" />
             </View>
           ) : expenses.length === 0 ? (
             <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
               <View className="mb-sm h-14 w-14 items-center justify-center rounded-full bg-surface-container">
-                <MaterialIcons name="receipt-long" size={28} color="#006c49" />
+                <MaterialIcons name="receipt-long" size={28} color="#1D9E75" />
               </View>
               <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
                 No expenses yet
@@ -257,6 +364,7 @@ export default function GroupDetailScreen() {
                   key={expense.id}
                   expense={expense}
                   currentUserId={user?.id}
+                  memberNameById={memberNameById}
                 />
               ))}
             </View>
@@ -271,34 +379,6 @@ export default function GroupDetailScreen() {
           </View>
         )}
 
-        {showDeleteGroup ? (
-          <View className="gap-stack-gap pt-md">
-            <Text className="px-1 font-sans-semibold text-headline-sm text-error">
-              Danger zone
-            </Text>
-            <Pressable
-              onPress={() => setDeleteConfirmVisible(true)}
-              disabled={isDeleting}
-              className="flex-row items-center justify-center gap-sm rounded-xl border border-error/20 bg-error/10 py-md active:opacity-90 disabled:opacity-50"
-            >
-              {isDeleting ? (
-                <ActivityIndicator color="#ba1a1a" />
-              ) : (
-                <MaterialIcons
-                  name="delete-forever"
-                  size={22}
-                  color="#ba1a1a"
-                />
-              )}
-              <Text className="font-sans-semibold text-body-lg text-error">
-                Delete group
-              </Text>
-            </Pressable>
-            <Text className="text-center font-sans text-label-md text-on-surface-variant">
-              Only the group creator can delete this group and all its data.
-            </Text>
-          </View>
-        ) : null}
       </ScrollView>
 
       {expenses.length > 0 ? (
@@ -317,6 +397,40 @@ export default function GroupDetailScreen() {
         onClose={() => setInviteVisible(false)}
         groupId={group.id}
         groupName={group.name}
+      />
+
+      <GroupOptionsSheet
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        canRename={canRename}
+        canDelete={canDelete}
+        canLeave={canLeave}
+        onRename={() => {
+          setRenameError(null);
+          setRenameVisible(true);
+        }}
+        onLeave={() => setLeaveConfirmVisible(true)}
+        onDelete={() => setDeleteConfirmVisible(true)}
+      />
+
+      <RenameGroupModal
+        visible={renameVisible}
+        initialName={group.name}
+        onClose={() => !isRenaming && setRenameVisible(false)}
+        onSave={handleRenameGroup}
+        isSaving={isRenaming}
+        error={renameError}
+      />
+
+      <ConfirmDialog
+        visible={leaveConfirmVisible}
+        title="Leave group?"
+        message={`You will no longer see "${group.name}" or its expenses. You can rejoin with an invite code.`}
+        confirmLabel="Leave"
+        destructive
+        isLoading={isLeaving}
+        onCancel={() => !isLeaving && setLeaveConfirmVisible(false)}
+        onConfirm={performLeaveGroup}
       />
 
       <ConfirmDialog

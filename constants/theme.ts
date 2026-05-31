@@ -1,40 +1,59 @@
-/** Split It design tokens from DESIGN.md */
 export const colors = {
-  surface: '#f9f9ff',
-  'surface-dim': '#d3daea',
-  'surface-bright': '#f9f9ff',
-  'surface-container-lowest': '#ffffff',
-  'surface-container-low': '#f0f3ff',
-  'surface-container': '#e7eefe',
-  'surface-container-high': '#e2e8f8',
-  'surface-container-highest': '#dce2f3',
-  'on-surface': '#151c27',
-  'on-surface-variant': '#3c4a42',
-  'inverse-surface': '#2a313d',
-  'inverse-on-surface': '#ebf1ff',
-  outline: '#6c7a71',
-  'outline-variant': '#bbcabf',
-  'surface-tint': '#006c49',
-  primary: '#006c49',
-  'on-primary': '#ffffff',
-  'primary-container': '#10b981',
-  'on-primary-container': '#00422b',
-  'inverse-primary': '#4edea3',
-  secondary: '#2b6954',
-  'on-secondary': '#ffffff',
-  'secondary-container': '#adedd3',
-  'on-secondary-container': '#306d58',
-  tertiary: '#005ac2',
-  'on-tertiary': '#ffffff',
-  'tertiary-container': '#71a1ff',
-  'on-tertiary-container': '#00367a',
-  error: '#ba1a1a',
-  'on-error': '#ffffff',
-  'error-container': '#ffdad6',
-  'on-error-container': '#93000a',
-  'primary-fixed': '#6ffbbe',
-  'primary-fixed-dim': '#4edea3',
-  background: '#f9f9ff',
-  'on-background': '#151c27',
-  'surface-variant': '#dce2f3',
-} as const;
+  brand: {
+    primary: '#1D9E75',
+    dark: '#0F6E56',
+    light: '#EAF3DE',
+    deeper: '#085041',
+  },
+  red: {
+    default: '#A32D2D',
+    light: '#FCEBEB',
+  },
+  blue: {
+    default: '#185FA5',
+    light: '#E6F1FB',
+  },
+  amber: {
+    default: '#854F0B',
+    light: '#FAEEDA',
+  },
+  gray: {
+    50: '#F1EFE8',
+    400: '#888780',
+    900: '#2C2C2A',
+  },
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  '2xl': 24,
+  '3xl': 32,
+};
+
+export const radius = {
+  sm: 4,
+  md: 8,
+  lg: 12,
+  pill: 20,
+  full: 9999,
+};
+
+export const fontSize = {
+  display: 28,
+  h1: 22,
+  h2: 18,
+  h3: 16,
+  body: 14,
+  small: 13,
+  caption: 11,
+};
+
+export const duration = {
+  fast: 150,
+  standard: 250,
+  complex: 350,
+};

@@ -5,6 +5,10 @@ import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { getCurrencyByCode } from '@/constants/currencies';
 import { groupIconForName, initialsFromLabel } from '@/lib/groupDisplay';
 import { formatMoneyCompact } from '@/lib/currency';
+import {
+  balanceTone,
+  yourBalanceStatusLabel,
+} from '@/lib/balanceDisplay';
 import { memberDisplayName } from '@/lib/members';
 import { platformShadow } from '@/lib/platformShadow';
 import type { Group, GroupMember } from '@/types/group';
@@ -20,41 +24,43 @@ export function GroupDetailHeader({
   yourBalance: number;
   expenseCount: number;
 }) {
-  const owed = yourBalance > 0.01;
-  const owes = yourBalance < -0.01;
+  const tone = balanceTone(yourBalance);
   const currencyMeta = getCurrencyByCode(group.currency);
-  const statusLabel = owed
-    ? 'You are owed'
-    : owes
-      ? 'You owe'
-      : 'All settled';
-  const statusIcon = owed ? 'arrow-upward' : owes ? 'arrow-downward' : 'check';
+  const statusLabel = yourBalanceStatusLabel(yourBalance);
 
   return (
     <View
       className="overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest"
       style={platformShadow('card')}
     >
-      <View className="relative bg-primary-container p-md">
-        <View className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary opacity-10" />
+      <View className={`relative p-md ${tone.cardBg}`}>
+        <View
+          className={`absolute -right-6 -top-6 h-28 w-28 rounded-full opacity-10 ${tone.decorBg}`}
+        />
         <View className="flex-row items-start gap-md">
-          <View className="h-14 w-14 items-center justify-center rounded-full border-2 border-on-primary-container/20 bg-surface-container-lowest">
+          <View
+            className={`h-14 w-14 items-center justify-center rounded-full border-2 bg-surface-container-lowest ${
+              tone.owes
+                ? 'border-on-error-container/20'
+                : 'border-on-primary-container/20'
+            }`}
+          >
             <MaterialIcons
               name={groupIconForName(group.name)}
               size={28}
-              color="#00422b"
+              color={tone.avatarIconColor}
             />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="font-sans-bold text-headline-md text-on-primary-container">
+            <Text className={`font-sans-bold text-headline-md ${tone.onContainer}`}>
               {group.name}
             </Text>
-            <Text className="mt-xs font-sans text-body-md text-on-primary-container/80">
+            <Text className={`mt-xs font-sans text-body-md ${tone.onContainerMuted}`}>
               {members.length} member{members.length === 1 ? '' : 's'}
               {' · '}
               {currencyMeta?.flag ?? '🌐'} {group.currency}
             </Text>
-            <Text className="mt-xs font-sans text-label-md text-on-primary-container/70">
+            <Text className={`mt-xs font-sans text-label-md ${tone.onContainerSubtle}`}>
               {expenseCount} expense{expenseCount === 1 ? '' : 's'}
             </Text>
           </View>
@@ -62,26 +68,28 @@ export function GroupDetailHeader({
 
         <View className="mt-md flex-row items-end justify-between">
           <View>
-            <Text className="font-sans text-label-md text-on-primary-container/80">
+            <Text className={`font-sans text-label-md ${tone.onContainerMuted}`}>
               Your balance
             </Text>
-            <Text className="font-sans-bold text-display-lg-mobile text-on-primary-container">
+            <Text className={`font-sans-bold text-display-lg-mobile ${tone.amountText}`}>
               {formatMoneyCompact(yourBalance, group.currency)}
             </Text>
             <ConvertedAmountLabel
               amount={yourBalance}
               fromCurrency={group.currency}
-              className="font-sans text-label-md text-on-primary-container/75"
+              className={`font-sans text-label-md ${tone.onContainerFaint}`}
             />
           </View>
-          <View className="flex-row items-center rounded-full bg-secondary-container px-sm py-xs">
+          <View
+            className={`flex-row items-center rounded-full px-sm py-xs ${tone.chipBg}`}
+          >
             <MaterialIcons
-              name={statusIcon}
+              name={tone.statusIcon}
               size={16}
-              color="#306d58"
+              color={tone.iconColor}
               style={{ marginRight: 4 }}
             />
-            <Text className="font-sans-semibold text-label-md text-on-secondary-container">
+            <Text className={`font-sans-semibold text-label-md ${tone.chipText}`}>
               {statusLabel}
             </Text>
           </View>

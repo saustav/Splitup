@@ -18,7 +18,7 @@ export function AppLogo({
 
   const content = (
     <View className="flex-row items-center gap-sm">
-      <MaterialIcons name="payments" size={iconSize} color="#006c49" />
+      <MaterialIcons name="payments" size={iconSize} color="#1D9E75" />
       <Text className={textClass}>{APP_NAME}</Text>
     </View>
   );

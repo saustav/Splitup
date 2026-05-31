@@ -61,7 +61,7 @@ export function CustomTabBar({
               className="-mt-4 h-14 w-14 items-center justify-center rounded-full border-4 border-surface-container-lowest bg-primary active:opacity-80"
               style={platformShadow('tabBar')}
             >
-              <MaterialIcons name="add" size={28} color={colors['on-primary']} />
+              <MaterialIcons name="add" size={28} color="#ffffff" />
             </Pressable>
           );
         }
@@ -104,9 +104,7 @@ export function CustomTabBar({
               name={iconName}
               size={24}
               color={
-                isFocused
-                  ? colors['on-secondary-container']
-                  : colors['on-surface-variant']
+                isFocused ? colors.brand.dark : colors.gray[400]
               }
             />
             {tab.label ? (

@@ -1,6 +1,7 @@
-import { calculateBalances } from '@/lib/balances';
+import { calculateBalances, normalizeNetBalance } from '@/lib/balances';
 import { fetchGroupExpenses } from '@/lib/expenses';
 import { fetchGroupMembers, fetchUserGroups } from '@/lib/groups';
+import { fetchGroupSettlements } from '@/lib/settlements';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Group } from '@/types/group';
 
@@ -27,12 +28,13 @@ export async function fetchDashboardSummary(
   await Promise.all(
     groups.map(async (group) => {
       try {
-        const [members, expenses] = await Promise.all([
+        const [members, expenses, settlements] = await Promise.all([
           fetchGroupMembers(group.id),
           fetchGroupExpenses(group.id),
+          fetchGroupSettlements(group.id),
         ]);
 
-        const balances = calculateBalances(expenses, members);
+        const balances = calculateBalances(expenses, members, settlements);
         const mine = balances.find((b) => b.user_id === userId);
         const netBalance = mine?.net_balance ?? 0;
 
@@ -43,13 +45,12 @@ export async function fetchDashboardSummary(
     })
   );
 
-  const totalBalance = groupBalances.reduce(
-    (sum, item) => sum + item.netBalance,
-    0
+  const totalBalance = normalizeNetBalance(
+    groupBalances.reduce((sum, item) => sum + item.netBalance, 0)
   );
 
   return {
-    totalBalance: Math.round(totalBalance * 100) / 100,
+    totalBalance,
     groupBalances: groupBalances.sort(
       (a, b) =>
         new Date(b.group.created_at).getTime() -

@@ -4,18 +4,18 @@ Split bills with friends — built for Nepal with Khalti and eSewa payments.
 
 ## Tech stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React Native + Expo (iOS, Android, Web) |
-| Styling | NativeWind (Tailwind CSS) |
-| Backend & DB | Supabase (PostgreSQL + realtime) |
-| Auth | Supabase Auth (Google, Apple) |
-| State | Zustand |
-| Navigation | Expo Router |
-| Push | Expo Notifications |
-| Payments | Khalti, eSewa |
-| Web hosting | Vercel |
-| Version control | GitHub |
+| Layer           | Technology                              |
+| --------------- | --------------------------------------- |
+| Frontend        | React Native + Expo (iOS, Android, Web) |
+| Styling         | NativeWind (Tailwind CSS)               |
+| Backend & DB    | Supabase (PostgreSQL + realtime)        |
+| Auth            | Supabase Auth (Google, Apple)           |
+| State           | Zustand                                 |
+| Navigation      | Expo Router                             |
+| Push            | Expo Notifications                      |
+| Payments        | Khalti, eSewa                           |
+| Web hosting     | Vercel                                  |
+| Version control | GitHub                                  |
 
 ## Getting started
 
@@ -64,9 +64,11 @@ constants/        # Theme colors and shared values
 3. Run `supabase/schema.sql` in the Supabase SQL Editor.
 4. Enable **Google** and **Apple** under **Auth → Sign In / Providers**.
 5. Add redirect URLs under **Auth → URL Configuration**:
-   - `splitup://auth/callback` (iOS/Android)
+   - `splitup://**` (iOS/Android dev build — wildcard covers all paths)
+   - `splitup://auth/callback` (optional exact match)
    - `http://localhost:8081/auth/callback` (local web — use the port shown in the terminal)
    - Your production web URL + `/auth/callback` after deploying
+6. For Google on iOS: in Supabase **Auth → Providers → Google**, enable **Skip nonce check** if sign-in fails after Google consent.
 
 Sign-in uses `app/(auth)/login.tsx`. Web OAuth completes on `app/auth/callback.tsx`. Signed-in users are routed to tabs via `Stack.Protected`.
 
@@ -88,13 +90,13 @@ Enable realtime on `expenses` and `expense_splits` in Supabase Replication for l
 
 Run `supabase/invites-settlements-migration.sql` if upgrading an existing database.
 
-| Feature | How to use |
-|---------|------------|
-| **Invite friends** | Group screen → **Invite** → share link or code (`splitup://invite/CODE`) |
-| **Join via invite** | Friend opens link while signed in → joins group |
-| **Unequal splits** | Add expense → **Custom** → enter amount per person (must sum to total) |
-| **Settle up** | Group screen → **Settle up** → pay via **Khalti** or **eSewa** |
-| **Payment keys** | Add Khalti/eSewa vars to `.env`; use a Supabase Edge Function for live checkout (see `lib/payments/README.md`) |
+| Feature             | How to use                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Invite friends**  | Group screen → **Invite** → share link or code (`splitup://invite/CODE`)                                       |
+| **Join via invite** | Friend opens link while signed in → joins group                                                                |
+| **Unequal splits**  | Add expense → **Custom** → enter amount per person (must sum to total)                                         |
+| **Settle up**       | Group screen → **Settle up** → pay via **Khalti** or **eSewa**                                                 |
+| **Payment keys**    | Add Khalti/eSewa vars to `.env`; use a Supabase Edge Function for live checkout (see `lib/payments/README.md`) |
 
 Settlements simplify debts (fewest payments) and record payment history. Tap **I've paid** after completing payment in the browser.
 
@@ -112,3 +114,12 @@ Secret keys must live on the server. Use Supabase Edge Functions to initiate pay
 ## Push notifications
 
 Call `registerForPushNotifications()` from `lib/notifications.ts` after the user signs in, then save the Expo push token to Supabase.
+
+## WhatsApp bot
+
+Text expenses to your WhatsApp Business number (e.g. `50 dinner`). Users link their phone under **Account → Integrations**.
+
+1. Run `supabase/whatsapp-bot-migration.sql`
+2. Deploy `supabase/functions/whatsapp-webhook` with Meta API credentials
+
+See `lib/whatsapp/README.md` for commands and setup.

@@ -116,9 +116,9 @@ export default function JoinWithCodeScreen() {
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
                 {isPasting ? (
-                  <ActivityIndicator size="small" color="#006c49" />
+                  <ActivityIndicator size="small" color="#1D9E75" />
                 ) : (
-                  <MaterialIcons name="content-paste" size={18} color="#006c49" />
+                  <MaterialIcons name="content-paste" size={18} color="#1D9E75" />
                 )}
                 <Text className="font-sans-semibold text-label-md text-primary">
                   Paste

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { convertCurrency } from '@/lib/exchangeRates';
-import { formatMoneyCompact } from '@/lib/currency';
+import {
+  convertCurrency,
+  formatMoneyCompact,
+  getCachedRatesFromBase,
+} from '@/lib/currency';
 
 export function useCurrencyConversion(
   amount: number,
@@ -21,6 +24,16 @@ export function useCurrencyConversion(
       setConvertedAmount(null);
       setIsLoading(false);
       return;
+    }
+
+    const cachedRates = getCachedRatesFromBase(from);
+    if (cachedRates) {
+      const rate = cachedRates[to];
+      if (rate != null && Number.isFinite(rate)) {
+        setConvertedAmount(Math.round(amount * rate * 100) / 100);
+        setIsLoading(false);
+        return;
+      }
     }
 
     let cancelled = false;

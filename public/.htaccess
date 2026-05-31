@@ -1,0 +1,26 @@
+# Apache config for Split It (Expo static web export)
+# Copied to dist/ when you run: npx expo export -p web
+#
+# Upload everything inside dist/ to your hosting document root.
+# Requires AllowOverride All in your Apache vhost.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Leave existing files and folders alone (JS, CSS, images, route HTML)
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-l
+
+  # Client-side routing fallback (Expo Router)
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Optional: force HTTPS (uncomment on production)
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTPS} off
+#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>

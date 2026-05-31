@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ScrollView, Text, View } from 'react-native';
 
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
+import { balanceTone, isEffectivelyZero } from '@/lib/balanceDisplay';
 import { formatMoney } from '@/lib/currency';
 import { platformShadow } from '@/lib/platformShadow';
 import type { MemberBalance } from '@/types/expense';
@@ -13,7 +14,7 @@ export function BalanceSummary({
   balances: MemberBalance[];
   currencyCode?: string;
 }) {
-  const withActivity = balances.filter((b) => Math.abs(b.net_balance) >= 0.01);
+  const withActivity = balances.filter((b) => !isEffectivelyZero(b.net_balance));
 
   if (withActivity.length === 0) {
     return (
@@ -38,18 +39,9 @@ export function BalanceSummary({
       contentContainerStyle={{ gap: 12, paddingRight: 4 }}
     >
       {withActivity.map((balance) => {
-        const owes = balance.net_balance < 0;
-        const owed = balance.net_balance > 0;
-        const chipBg = owes
-          ? 'bg-error-container'
-          : owed
-            ? 'bg-primary/10'
-            : 'bg-surface-container-high';
-        const chipText = owes
-          ? 'text-error'
-          : owed
-            ? 'text-primary'
-            : 'text-on-surface-variant';
+        const tone = balanceTone(balance.net_balance);
+        const owes = tone.owes;
+        const owed = tone.owed;
 
         return (
           <View
@@ -63,15 +55,13 @@ export function BalanceSummary({
             >
               {balance.display_name}
             </Text>
-            <View className={`mt-sm self-start rounded-full px-sm py-xs ${chipBg}`}>
-              <Text className={`font-sans-semibold text-label-md ${chipText}`}>
+            <View className={`mt-sm self-start rounded-full px-sm py-xs ${tone.listChipBg}`}>
+              <Text className={`font-sans-semibold text-label-md ${tone.listChipText}`}>
                 {owes ? 'Owes' : owed ? 'Owed' : 'Settled'}
               </Text>
             </View>
             <Text
-              className={`mt-sm font-sans-medium text-numeric-data ${
-                owes ? 'text-error' : owed ? 'text-primary' : 'text-on-surface-variant'
-              }`}
+              className={`mt-sm font-sans-medium text-numeric-data ${tone.listAmountText}`}
             >
               {owes
                 ? formatMoney(Math.abs(balance.net_balance), currencyCode)
@@ -83,6 +73,7 @@ export function BalanceSummary({
               <ConvertedAmountLabel
                 amount={balance.net_balance}
                 fromCurrency={currencyCode}
+                className={`font-sans text-label-md ${tone.convertedHintText}`}
               />
             )}
           </View>

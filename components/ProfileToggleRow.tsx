@@ -26,7 +26,7 @@ export function ProfileToggleRow({
     >
       <View className="mr-md min-w-0 flex-1 flex-row items-center gap-md">
         {icon ? (
-          <MaterialIcons name={icon} size={22} color="#006c49" />
+          <MaterialIcons name={icon} size={22} color="#1D9E75" />
         ) : null}
         <View className="min-w-0 flex-1">
           <Text className="font-sans-medium text-body-md text-on-surface">{title}</Text>
@@ -38,7 +38,7 @@ export function ProfileToggleRow({
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: '#dce2f3', true: '#006c49' }}
+        trackColor={{ false: '#dce2f3', true: '#1D9E75' }}
         thumbColor="#ffffff"
       />
     </View>

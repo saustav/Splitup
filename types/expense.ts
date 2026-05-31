@@ -22,6 +22,9 @@ export type ExpenseSplit = {
   expense_id: string;
   user_id: string;
   amount_owed: number;
+  profile?: {
+    display_name: string | null;
+  } | null;
 };
 
 export type MemberBalance = {

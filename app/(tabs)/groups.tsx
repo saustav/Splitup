@@ -1,8 +1,9 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   Text,
   View,
@@ -14,6 +15,7 @@ import { fetchDashboardSummary } from '@/lib/dashboard';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { useGroupsStore } from '@/stores/groupsStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 import type { Group } from '@/types/group';
 
 export default function GroupsScreen() {
@@ -26,31 +28,40 @@ export default function GroupsScreen() {
   const fetchGroups = useGroupsStore((s) => s.fetchGroups);
   const subscribe = useGroupsStore((s) => s.subscribe);
   const unsubscribe = useGroupsStore((s) => s.unsubscribe);
+  const countByGroupId = usePendingActionsStore((s) => s.countByGroupId);
+  const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
 
   const [balancesByGroup, setBalancesByGroup] = useState<
     Record<string, number>
   >({});
 
-  useEffect(() => {
-    fetchGroups();
-    subscribe();
-    return () => unsubscribe();
-  }, [fetchGroups, subscribe, unsubscribe]);
+  const loadBalances = useCallback(async () => {
+    if (!user?.id) return;
+    const data = await fetchDashboardSummary(user.id);
+    const map: Record<string, number> = {};
+    for (const item of data.groupBalances) {
+      map[item.group.id] = item.netBalance;
+    }
+    setBalancesByGroup(map);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    fetchDashboardSummary(user.id).then((data) => {
-      const map: Record<string, number> = {};
-      for (const item of data.groupBalances) {
-        map[item.group.id] = item.netBalance;
-      }
-      setBalancesByGroup(map);
-    });
-  }, [user?.id, groups]);
+    subscribe();
+    return () => unsubscribe();
+  }, [subscribe, unsubscribe]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGroups();
+      void loadBalances();
+      refreshPendingActions();
+    }, [fetchGroups, loadBalances, refreshPendingActions]),
+  );
 
   const handleRefresh = useCallback(() => {
     fetchGroups();
-  }, [fetchGroups]);
+    refreshPendingActions();
+  }, [fetchGroups, refreshPendingActions]);
 
   function openGroup(group: Group) {
     router.push(`/group/${group.id}`);
@@ -71,11 +82,11 @@ export default function GroupsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar showBack onBackPress={() => router.back()} />
+      <TopAppBar showBack />
 
       {isLoading && groups.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#006c49" />
+          <ActivityIndicator size="large" color="#1D9E75" />
         </View>
       ) : (
         <FlatList
@@ -117,6 +128,7 @@ export default function GroupsScreen() {
               <GroupCard
                 group={item}
                 netBalance={balancesByGroup[item.id]}
+                pendingActionCount={countByGroupId[item.id] ?? 0}
                 onPress={() => openGroup(item)}
               />
             </View>

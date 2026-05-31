@@ -2,6 +2,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 
 import { useCurrencyConversion } from '@/hooks/useCurrencyConversion';
 import { useProfileDisplayCurrency } from '@/hooks/useProfileDisplayCurrency';
+import { balanceTone } from '@/lib/balanceDisplay';
 import { useAuthStore } from '@/stores/authStore';
 
 type ConvertedAmountLabelProps = {
@@ -18,11 +19,14 @@ type ConvertedAmountLabelProps = {
 export function ConvertedAmountLabel({
   amount,
   fromCurrency,
-  className = 'font-sans text-label-md text-on-surface-variant',
+  className,
   prefix = '≈ ',
 }: ConvertedAmountLabelProps) {
   const userId = useAuthStore((s) => s.user?.id);
   const { defaultCurrency, showConverted } = useProfileDisplayCurrency(userId);
+  const tone = balanceTone(amount);
+  const resolvedClassName =
+    className ?? `font-sans text-label-md ${tone.convertedHintText}`;
   const { formatted, isLoading, show } = useCurrencyConversion(
     amount,
     fromCurrency,
@@ -47,7 +51,7 @@ export function ConvertedAmountLabel({
   }
 
   return (
-    <Text className={className}>
+    <Text className={resolvedClassName}>
       {prefix}
       {formatted} ({defaultCurrency})
     </Text>

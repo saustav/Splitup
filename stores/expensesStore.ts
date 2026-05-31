@@ -7,15 +7,18 @@ import {
   fetchGroupExpenses,
 } from '@/lib/expenses';
 import { fetchGroupMembers } from '@/lib/groups';
+import { fetchGroupSettlements } from '@/lib/settlements';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { Expense, MemberBalance } from '@/types/expense';
 import type { GroupMember } from '@/types/group';
+import type { Settlement } from '@/types/settlement';
 
 interface ExpensesState {
   groupId: string | null;
   expenses: Expense[];
   members: GroupMember[];
   balances: MemberBalance[];
+  pendingSettlements: Settlement[];
   isLoading: boolean;
   isCreating: boolean;
   error: string | null;
@@ -37,6 +40,7 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
   expenses: [],
   members: [],
   balances: [],
+  pendingSettlements: [],
   isLoading: false,
   isCreating: false,
   error: null,
@@ -47,15 +51,19 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
     set({ groupId, isLoading: true, error: null });
 
     try {
-      const [expenses, members] = await Promise.all([
-        fetchGroupExpenses(groupId),
-        fetchGroupMembers(groupId),
-      ]);
+      const [expenses, members, completedSettlements, pendingSettlements] =
+        await Promise.all([
+          fetchGroupExpenses(groupId),
+          fetchGroupMembers(groupId),
+          fetchGroupSettlements(groupId, { status: 'completed' }),
+          fetchGroupSettlements(groupId, { status: 'pending' }),
+        ]);
 
       set({
         expenses,
         members,
-        balances: calculateBalances(expenses, members),
+        balances: calculateBalances(expenses, members, completedSettlements),
+        pendingSettlements,
         isLoading: false,
       });
     } catch (e) {
@@ -119,6 +127,18 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
           get().loadForGroup(groupId);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'settlements',
+          filter: `group_id=eq.${groupId}`,
+        },
+        () => {
+          get().loadForGroup(groupId);
+        }
+      )
       .subscribe();
   },
 
@@ -136,6 +156,7 @@ export const useExpensesStore = create<ExpensesState>((set, get) => ({
       expenses: [],
       members: [],
       balances: [],
+      pendingSettlements: [],
       isLoading: false,
       isCreating: false,
       error: null,

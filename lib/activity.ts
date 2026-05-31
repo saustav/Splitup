@@ -11,6 +11,7 @@ export type ActivityType =
   | 'payment'
   | 'group_join'
   | 'settlement'
+  | 'settlement_pending'
   | 'invite';
 
 export type ActivityItem = {
@@ -83,6 +84,19 @@ function profileName(
   const name = profile?.display_name?.trim();
   if (name) return shortName(name);
   return 'Someone';
+}
+
+function settlementMethodLabel(provider: string | undefined): string {
+  switch (provider) {
+    case 'manual':
+      return 'in cash';
+    case 'khalti':
+      return 'via Khalti';
+    case 'esewa':
+      return 'via eSewa';
+    default:
+      return '';
+  }
 }
 
 async function loadProfileNames(
@@ -208,6 +222,8 @@ function mapActivityEvent(
     case 'settlement_completed': {
       const payerId = meta.payer_id as string | undefined;
       const payeeId = meta.payee_id as string | undefined;
+      const provider = meta.provider as string | undefined;
+      const method = settlementMethodLabel(provider);
       const amount = row.amount != null ? Number(row.amount) : 0;
       const amountStr = formatMoney(amount, currency);
       const when = row.created_at;
@@ -226,7 +242,9 @@ function mapActivityEvent(
           amount,
           actorName: who,
           description: amountStr,
-          message: `${who} paid you ${amountStr}`,
+          message: method
+            ? `${who} paid you ${amountStr} ${method}`
+            : `${who} paid you ${amountStr}`,
         };
       }
       if (payerId === userId && payeeId) {
@@ -241,9 +259,54 @@ function mapActivityEvent(
           groupName,
           currency,
           amount,
-          actorName: 'You',
+          actorName: who,
           description: amountStr,
-          message: `You settled up with ${who}`,
+          message: method
+            ? `You paid ${who} ${amountStr} ${method}`
+            : `You settled up with ${who}`,
+          dimmed: true,
+        };
+      }
+      return null;
+    }
+    case 'settlement_pending': {
+      const payerId = meta.payer_id as string | undefined;
+      const payeeId = meta.payee_id as string | undefined;
+      const amount = row.amount != null ? Number(row.amount) : 0;
+      const amountStr = formatMoney(amount, currency);
+
+      if (payeeId === userId && payerId) {
+        const who = profileName(payerId, userId, {
+          display_name: profileNames[payerId] ?? null,
+        });
+        return {
+          id: `event-${row.id}`,
+          type: 'settlement_pending',
+          createdAt: row.created_at,
+          groupId: row.group_id,
+          groupName,
+          currency,
+          amount,
+          actorName: who,
+          description: amountStr,
+          message: `${who} says they paid you ${amountStr} in cash — pending your confirmation`,
+        };
+      }
+      if (payerId === userId && payeeId) {
+        const who = profileName(payeeId, userId, {
+          display_name: profileNames[payeeId] ?? null,
+        });
+        return {
+          id: `event-${row.id}`,
+          type: 'settlement_pending',
+          createdAt: row.created_at,
+          groupId: row.group_id,
+          groupName,
+          currency,
+          amount,
+          actorName: who,
+          description: amountStr,
+          message: `You recorded paying ${who} ${amountStr} — waiting for confirmation`,
           dimmed: true,
         };
       }
@@ -313,7 +376,10 @@ async function fetchActivityEvents(
       ) {
         expenseIdsWithEvents.add(row.entity_id);
       }
-      if (row.event_type === 'settlement_completed') {
+      if (
+        row.event_type === 'settlement_completed' ||
+        row.event_type === 'settlement_pending'
+      ) {
         settlementIdsWithEvents.add(row.entity_id);
       }
       if (row.event_type === 'member_joined') {
@@ -360,11 +426,11 @@ async function fetchLegacyActivity(
     supabase
       .from('settlements')
       .select(
-        'id, group_id, payer_id, payee_id, amount, status, created_at, completed_at'
+        'id, group_id, payer_id, payee_id, amount, provider, status, created_at, completed_at'
       )
       .in('group_id', groupIds)
-      .eq('status', 'completed')
-      .order('completed_at', { ascending: false })
+      .in('status', ['completed', 'pending'])
+      .order('created_at', { ascending: false })
       .limit(40),
     supabase
       .from('group_members')
@@ -423,6 +489,48 @@ async function fetchLegacyActivity(
       const currency = currencyByGroup[row.group_id] ?? 'USD';
       const when = row.completed_at ?? row.created_at;
       const amountStr = formatMoney(Number(row.amount), currency);
+      const method = settlementMethodLabel(
+        (row as { provider?: string }).provider
+      );
+      const isPending = (row as { status?: string }).status === 'pending';
+
+      if (isPending) {
+        if (row.payee_id === userId) {
+          const who = profileName(row.payer_id, userId, {
+            display_name: profileNames[row.payer_id] ?? null,
+          });
+          items.push({
+            id: `settlement-pending-${row.id}`,
+            type: 'settlement_pending',
+            createdAt: when,
+            groupId: row.group_id,
+            groupName,
+            currency,
+            amount: Number(row.amount),
+            actorName: who,
+            description: amountStr,
+            message: `${who} says they paid you ${amountStr} in cash — pending your confirmation`,
+          });
+        } else if (row.payer_id === userId) {
+          const who = profileName(row.payee_id, userId, {
+            display_name: profileNames[row.payee_id] ?? null,
+          });
+          items.push({
+            id: `settlement-pending-out-${row.id}`,
+            type: 'settlement_pending',
+            createdAt: when,
+            groupId: row.group_id,
+            groupName,
+            currency,
+            amount: Number(row.amount),
+            actorName: who,
+            description: amountStr,
+            message: `You recorded paying ${who} ${amountStr} — waiting for confirmation`,
+            dimmed: true,
+          });
+        }
+        continue;
+      }
 
       if (row.payee_id === userId) {
         const who = profileName(row.payer_id, userId, {
@@ -438,7 +546,9 @@ async function fetchLegacyActivity(
           amount: Number(row.amount),
           actorName: who,
           description: amountStr,
-          message: `${who} paid you ${amountStr}`,
+          message: method
+            ? `${who} paid you ${amountStr} ${method}`
+            : `${who} paid you ${amountStr}`,
         });
       } else if (row.payer_id === userId) {
         const who = profileName(row.payee_id, userId, {
@@ -452,9 +562,11 @@ async function fetchLegacyActivity(
           groupName,
           currency,
           amount: Number(row.amount),
-          actorName: 'You',
+          actorName: who,
           description: amountStr,
-          message: `You settled up with ${who}`,
+          message: method
+            ? `You paid ${who} ${amountStr} ${method}`
+            : `You settled up with ${who}`,
           dimmed: true,
         });
       }
@@ -556,7 +668,12 @@ export function filterActivities(
     return items.filter((i) => EXPENSE_TYPES.includes(i.type));
   }
   if (filter === 'payments') {
-    return items.filter((i) => i.type === 'payment' || i.type === 'settlement');
+    return items.filter(
+      (i) =>
+        i.type === 'payment' ||
+        i.type === 'settlement' ||
+        i.type === 'settlement_pending'
+    );
   }
   if (filter === 'groups') {
     return items.filter((i) => i.type === 'group_join' || i.type === 'invite');
@@ -674,7 +791,10 @@ export function activityFilterCounts(items: ActivityItem[]): Record<
     all: items.length,
     expenses: items.filter((i) => EXPENSE_TYPES.includes(i.type)).length,
     payments: items.filter(
-      (i) => i.type === 'payment' || i.type === 'settlement'
+      (i) =>
+        i.type === 'payment' ||
+        i.type === 'settlement' ||
+        i.type === 'settlement_pending'
     ).length,
     groups: items.filter(
       (i) => i.type === 'group_join' || i.type === 'invite'

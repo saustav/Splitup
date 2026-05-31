@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ActivityIndicator, Text, View } from 'react-native';
 
+import { balanceTone, totalBalanceStatusLabel } from '@/lib/balanceDisplay';
 import { formatMoneyCompact } from '@/lib/currency';
 
 type BalanceOverviewCardProps = {
@@ -27,38 +28,20 @@ export function BalanceOverviewCard({
   const mainAmount = useConverted ? convertedTotal : totalBalance;
   const mainCurrency = useConverted ? displayCurrency : primaryCurrency;
 
-  const owed = mainAmount > 0.01;
-  const owes = mainAmount < -0.01;
+  const tone = balanceTone(mainAmount);
+  const statusLabel = totalBalanceStatusLabel(mainAmount);
 
-  const statusLabel = owed
-    ? 'You are owed in total'
-    : owes
-      ? 'You owe in total'
-      : 'All settled up';
-
-  const StatusIcon = owed ? 'arrow-upward' : owes ? 'arrow-downward' : 'check';
-
-  const cardBg = owes ? 'bg-error-container' : 'bg-primary-container';
-  const decorBg = owes ? 'bg-error' : 'bg-primary';
-  const labelText = owes
+  const labelText = tone.owes
     ? 'text-on-error-container opacity-80'
     : 'text-on-primary-container opacity-80';
-  const amountText = owes ? 'text-error' : 'text-on-primary-container';
-  const hintText = owes
-    ? 'text-on-error-container/70'
-    : 'text-on-primary-container/70';
-  const chipBg = owes ? 'bg-error/15' : 'bg-secondary-container';
-  const chipText = owes ? 'text-error' : 'text-on-secondary-container';
-  const iconColor = owes ? '#ba1a1a' : '#306d58';
-  const spinnerColor = owes ? '#ba1a1a' : '#00422b';
 
   return (
-    <View className={`relative overflow-hidden rounded-xl p-md ${cardBg}`}>
+    <View className={`relative overflow-hidden rounded-xl p-md ${tone.cardBg}`}>
       <View
-        className={`absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-10 ${decorBg}`}
+        className={`absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-10 ${tone.decorBg}`}
       />
       <View
-        className={`absolute -bottom-4 -left-4 h-24 w-24 rounded-full opacity-10 ${decorBg}`}
+        className={`absolute -bottom-4 -left-4 h-24 w-24 rounded-full opacity-10 ${tone.decorBg}`}
       />
 
       <Text className={`font-sans text-body-md ${labelText}`}>
@@ -67,29 +50,23 @@ export function BalanceOverviewCard({
       </Text>
 
       {isConverting ? (
-        <ActivityIndicator className="mt-2" color={spinnerColor} />
+        <ActivityIndicator className="mt-2" color={tone.spinnerColor} />
       ) : (
-        <Text className={`font-sans-bold text-display-lg-mobile ${amountText}`}>
+        <Text className={`font-sans-bold text-display-lg-mobile ${tone.amountText}`}>
           {formatMoneyCompact(mainAmount, mainCurrency)}
         </Text>
       )}
 
-      {useConverted && Math.abs(totalBalance) > 0.01 ? (
-        <Text className={`mt-xs font-sans text-label-md ${hintText}`}>
-          Raw sum in group currencies may differ when groups use mixed currencies.
-        </Text>
-      ) : null}
-
       <View
-        className={`mt-sm self-start flex-row items-center rounded-full px-sm py-xs ${chipBg}`}
+        className={`mt-sm self-start flex-row items-center rounded-full px-sm py-xs ${tone.chipBg}`}
       >
         <MaterialIcons
-          name={StatusIcon}
+          name={tone.statusIcon}
           size={16}
-          color={iconColor}
+          color={tone.iconColor}
           style={{ marginRight: 4 }}
         />
-        <Text className={`font-sans-semibold text-label-md ${chipText}`}>
+        <Text className={`font-sans-semibold text-label-md ${tone.chipText}`}>
           {statusLabel}
         </Text>
       </View>

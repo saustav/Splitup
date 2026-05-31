@@ -19,3 +19,8 @@ export type Settlement = {
   external_ref: string | null;
   created_at: string;
 };
+
+export type EnrichedSettlement = Settlement & {
+  payer_name: string;
+  payee_name: string;
+};

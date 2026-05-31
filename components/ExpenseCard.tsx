@@ -4,27 +4,34 @@ import { Pressable, Text, View } from 'react-native';
 
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { ExpenseCategoryChip } from '@/components/ExpenseCategoryChip';
+import { ExpenseSplitParticipants } from '@/components/ExpenseSplitParticipants';
 import { formatMoney } from '@/lib/currency';
+import { formatExpenseDate } from '@/lib/dates';
 import { platformShadow } from '@/lib/platformShadow';
+import { getIncludedSplits } from '@/lib/expenseSplits';
 import { canEditExpense, expenseAddedByLabel } from '@/lib/expenseForm';
 import type { Expense } from '@/types/expense';
 
 export function ExpenseCard({
   expense,
   currentUserId,
+  memberNameById,
 }: {
   expense: Expense;
   currentUserId?: string;
+  /** Fallback names when split profiles are missing. */
+  memberNameById?: Record<string, string>;
 }) {
   const router = useRouter();
   const addedBy = expenseAddedByLabel(expense, currentUserId);
   const youPaid = expense.paid_by === currentUserId;
   const splits = expense.splits ?? [];
-  const splitSum = splits.reduce((s, x) => s + Number(x.amount_owed), 0);
+  const included = getIncludedSplits(splits);
+  const splitSum = included.reduce((s, x) => s + Number(x.amount_owed), 0);
   const isEqual =
-    splits.length > 0 &&
-    splits.every(
-      (s) => Math.abs(Number(s.amount_owed) - splitSum / splits.length) < 0.02
+    included.length > 0 &&
+    included.every(
+      (s) => Math.abs(Number(s.amount_owed) - splitSum / included.length) < 0.02
     );
   const editable = canEditExpense(expense, currentUserId);
 
@@ -60,7 +67,7 @@ export function ExpenseCard({
             />
           </View>
           {editable ? (
-            <MaterialIcons name="edit" size={18} color="#006c49" />
+            <MaterialIcons name="edit" size={18} color="#1D9E75" />
           ) : null}
         </View>
       </View>
@@ -71,20 +78,21 @@ export function ExpenseCard({
       >
         {addedBy}
       </Text>
-      {splits.length > 0 && (
-        <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
-          {isEqual
-            ? `Split equally · ${formatMoney(splitSum / splits.length, expense.currency)} each (${splits.length} people)`
-            : `Custom split · ${splits.length} participant${splits.length === 1 ? '' : 's'}`}
+      {included.length > 0 ? (
+        <ExpenseSplitParticipants
+          splits={splits}
+          currency={expense.currency}
+          currentUserId={currentUserId}
+          memberNameById={memberNameById}
+          isEqualSplit={isEqual}
+        />
+      ) : null}
+      <View className="mt-xs flex-row items-center gap-xs">
+        <MaterialIcons name="calendar-today" size={14} color="#6c7a71" />
+        <Text className="font-sans text-label-md text-on-surface-variant">
+          {formatExpenseDate(expense.expense_date)}
         </Text>
-      )}
-      <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
-        {new Date(expense.expense_date).toLocaleDateString('en-NP', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })}
-      </Text>
+      </View>
       {editable ? (
         <Text className="mt-sm font-sans-semibold text-label-md text-primary">
           Tap to edit

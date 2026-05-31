@@ -1,12 +1,12 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Alert, Platform, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Platform, Text, View } from "react-native";
 
-import { OAuthButton } from '@/components/OAuthButton';
-import { APP_NAME } from '@/constants/app';
-import { signInWithOAuth } from '@/lib/auth';
-import { isSupabaseConfigured } from '@/lib/supabase';
-import { useAuthStore } from '@/stores/authStore';
+import { OAuthButton } from "@/components/OAuthButton";
+import { APP_NAME } from "@/constants/app";
+import { signInWithOAuth } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -14,18 +14,19 @@ export default function LoginScreen() {
   const session = useAuthStore((s) => s.session);
   const isSigningIn = useAuthStore((s) => s.isSigningIn);
   const setSigningIn = useAuthStore((s) => s.setSigningIn);
+  const refreshSession = useAuthStore((s) => s.refreshSession);
 
   useEffect(() => {
     if (session) {
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     }
   }, [session, router]);
 
-  async function handleSignIn(provider: 'google' | 'apple') {
+  async function handleSignIn(provider: "google" | "apple") {
     if (!isSupabaseConfigured) {
       Alert.alert(
-        'Supabase not configured',
-        'Copy .env.example to .env and add your EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.'
+        "Supabase not configured",
+        "Copy .env.example to .env and add your EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.",
       );
       return;
     }
@@ -35,9 +36,10 @@ export default function LoginScreen() {
 
     try {
       await signInWithOAuth(provider);
+      await refreshSession();
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Sign in failed';
-      if (message !== 'Sign in was cancelled') {
+      const message = e instanceof Error ? e.message : "Sign in failed";
+      if (message !== "Sign in was cancelled") {
         setError(message);
       }
     } finally {
@@ -57,13 +59,13 @@ export default function LoginScreen() {
       <View className="mt-10 gap-3">
         <OAuthButton
           provider="google"
-          onPress={() => handleSignIn('google')}
+          onPress={() => handleSignIn("google")}
           disabled={isSigningIn}
         />
-        {Platform.OS === 'ios' && (
+        {Platform.OS === "ios" && (
           <OAuthButton
             provider="apple"
-            onPress={() => handleSignIn('apple')}
+            onPress={() => handleSignIn("apple")}
             disabled={isSigningIn}
           />
         )}

@@ -1,7 +1,11 @@
 import { Session, User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 
+import { clearOAuthParamsFromUrl } from '@/lib/auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { useExpensesStore } from '@/stores/expensesStore';
+import { useGroupsStore } from '@/stores/groupsStore';
+import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 
 interface AuthState {
   session: Session | null;
@@ -67,9 +71,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSigningIn: (value) => set({ isSigningIn: value }),
 
   signOut: async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
+    try {
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+    } finally {
+      useGroupsStore.getState().reset();
+      useExpensesStore.getState().reset();
+      usePendingActionsStore.getState().reset();
+      clearOAuthParamsFromUrl();
+      set({ session: null, user: null, isSigningIn: false });
     }
-    set({ session: null, user: null });
   },
 }));

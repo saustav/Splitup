@@ -15,6 +15,7 @@ export function expenseToFormState(
   amountText: string;
   paidById: string;
   category: ExpenseCategoryId;
+  expenseDate: string;
   splitMode: SplitMode;
   includedIds: Set<string>;
   customSplits: Record<string, string>;
@@ -46,6 +47,7 @@ export function expenseToFormState(
     amountText: String(expense.amount),
     paidById: expense.paid_by,
     category: normalizeExpenseCategory(expense.category),
+    expenseDate: expense.expense_date,
     splitMode,
     includedIds,
     customSplits,

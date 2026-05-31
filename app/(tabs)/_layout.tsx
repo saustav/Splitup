@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { AddActionSheet } from '@/components/AddActionSheet';
 import { CreateGroupModal } from '@/components/CreateGroupModal';
 import { CustomTabBar } from '@/components/CustomTabBar';
+import { PendingActionsSheet } from '@/components/PendingActionsSheet';
+import { usePendingPaymentActionsBootstrap } from '@/hooks/usePendingPaymentActions';
 import { useGroupsStore } from '@/stores/groupsStore';
 
 export default function TabLayout() {
+  usePendingPaymentActionsBootstrap();
   const router = useRouter();
   const [addSheetVisible, setAddSheetVisible] = useState(false);
 
@@ -21,6 +24,7 @@ export default function TabLayout() {
   async function handleCreateGroup(name: string, currency: string) {
     const group = await createGroup(name, currency);
     if (group) {
+      await useGroupsStore.getState().fetchGroups();
       router.push(`/group/${group.id}`);
     }
   }
@@ -81,6 +85,8 @@ export default function TabLayout() {
         isCreating={isCreating}
         error={createError}
       />
+
+      <PendingActionsSheet />
     </>
   );
 }

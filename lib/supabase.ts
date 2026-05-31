@@ -34,8 +34,8 @@ export const supabase = createClient(
       storage: authStorage,
       autoRefreshToken: true,
       persistSession: true,
-      // Handled explicitly in app/auth/callback.tsx to avoid double code exchange.
-      detectSessionInUrl: false,
+      // Web: Supabase reads ?code= from the URL on getSession(). Native uses auth/callback.tsx.
+      detectSessionInUrl: Platform.OS === 'web',
     },
   }
 );

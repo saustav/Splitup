@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 import { formatActivityTime, type ActivityItem } from '@/lib/activity';
-import { formatMoney } from '@/lib/currency';
 import { platformShadow } from '@/lib/platformShadow';
 
 function iconConfig(type: ActivityItem['type']): {
@@ -16,13 +15,13 @@ function iconConfig(type: ActivityItem['type']): {
       return {
         name: 'receipt-long',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#006c49',
+        iconColor: '#1D9E75',
       };
     case 'expense_updated':
       return {
         name: 'edit',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#006c49',
+        iconColor: '#1D9E75',
       };
     case 'expense_deleted':
       return {
@@ -53,6 +52,12 @@ function iconConfig(type: ActivityItem['type']): {
         name: 'check-circle',
         containerClass: 'bg-surface-variant',
         iconColor: '#3c4a42',
+      };
+    case 'settlement_pending':
+      return {
+        name: 'hourglass-top',
+        containerClass: 'bg-amber-100 dark:bg-amber-950',
+        iconColor: '#b45309',
       };
   }
 }
@@ -111,12 +116,22 @@ function ActivityMessage({ item }: { item: ActivityItem }) {
 
   if (item.type === 'payment' && item.amount != null) {
     return (
-      <Text className="font-sans text-body-md text-on-surface">
-        <Text className="font-sans-semibold">{item.actorName}</Text>
-        {' paid you '}
-        <Text className="font-sans-semibold text-primary">
-          {formatMoney(item.amount, item.currency)}
-        </Text>
+      <Text className="font-sans text-body-md text-on-surface">{item.message}</Text>
+    );
+  }
+
+  if (item.type === 'settlement') {
+    return (
+      <Text className="font-sans text-body-md text-on-surface-variant">
+        {item.message}
+      </Text>
+    );
+  }
+
+  if (item.type === 'settlement_pending') {
+    return (
+      <Text className="font-sans text-body-md text-amber-900 dark:text-amber-200">
+        {item.message}
       </Text>
     );
   }
@@ -140,9 +155,8 @@ function ActivityMessage({ item }: { item: ActivityItem }) {
   }
 
   return (
-    <Text className="font-sans text-body-md text-on-surface">
-      You settled up with{' '}
-      <Text className="font-sans-semibold">{item.actorName}</Text>
+    <Text className="font-sans text-body-md text-on-surface-variant">
+      {item.message}
     </Text>
   );
 }
@@ -188,7 +202,7 @@ export function ActivityCard({
         onPress={handlePress}
         className="self-center rounded p-xs active:bg-surface-container"
       >
-        <MaterialIcons name="chevron-right" size={20} color="#006c49" />
+        <MaterialIcons name="chevron-right" size={20} color="#1D9E75" />
       </Pressable>
     </Pressable>
   );

@@ -4,48 +4,61 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppLogo } from '@/components/AppLogo';
+import { goBackOrHome, HOME_ROUTE } from '@/lib/navigation';
 
 type TopAppBarProps = {
   /** Page context shown under the app logo (e.g. group name). */
   title?: string;
   onWalletPress?: () => void;
   onNotificationsPress?: () => void;
+  /** Show bell; use with `notificationCount` for pending actions. */
+  showNotifications?: boolean;
+  /** Red dot when > 0 without a numeric badge. */
   hasNotifications?: boolean;
+  notificationCount?: number;
   showBack?: boolean;
   onBackPress?: () => void;
   /** Icon-only invite action on the right (replaces close when `showBack`). */
   onInvitePress?: () => void;
+  /** Three-dot group / page menu. */
+  onMenuPress?: () => void;
 };
 
-const SIDE_WIDTH = 88;
+const SIDE_WIDTH = 56;
+const SIDE_WIDTH_WITH_ACTIONS = 120;
 
 export function TopAppBar({
   title,
   onWalletPress,
   onNotificationsPress,
+  showNotifications = false,
   hasNotifications = false,
+  notificationCount = 0,
   showBack = false,
   onBackPress,
   onInvitePress,
+  onMenuPress,
 }: TopAppBarProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   function handleBack() {
-    if (onBackPress) {
+    if (onBackPress && router.canGoBack()) {
       onBackPress();
       return;
     }
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)');
-    }
+    goBackOrHome(router);
   }
 
   function goHome() {
-    router.replace('/(tabs)');
+    router.replace(HOME_ROUTE);
   }
+
+  const rightHasActions =
+    (showNotifications && !!onNotificationsPress) ||
+    !!onInvitePress ||
+    !!onMenuPress;
+  const rightWidth = rightHasActions ? SIDE_WIDTH_WITH_ACTIONS : SIDE_WIDTH;
 
   return (
     <View
@@ -66,7 +79,7 @@ export function TopAppBar({
               className="flex-row items-center gap-0.5 rounded-lg py-1 pr-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="arrow-back" size={22} color="#006c49" />
+              <MaterialIcons name="arrow-back" size={22} color="#1D9E75" />
               <Text className="font-sans-semibold text-label-md text-primary">
                 Back
               </Text>
@@ -96,19 +109,39 @@ export function TopAppBar({
           ) : null}
         </View>
 
-        <View style={{ width: SIDE_WIDTH, alignItems: 'flex-end' }}>
-          {hasNotifications ? (
+        <View
+          className="flex-row items-center justify-end"
+          style={{ width: rightWidth }}
+        >
+          {showNotifications && onNotificationsPress ? (
             <Pressable
               onPress={onNotificationsPress}
               accessibilityRole="button"
-              accessibilityLabel="Notifications"
+              accessibilityLabel={
+                notificationCount > 0
+                  ? `${notificationCount} notifications`
+                  : 'Notifications'
+              }
               className="relative rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="notifications-none" size={24} color="#3c4a42" />
-              <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-error" />
+              <MaterialIcons
+                name={notificationCount > 0 ? 'notifications' : 'notifications-none'}
+                size={24}
+                color={notificationCount > 0 ? '#1D9E75' : '#3c4a42'}
+              />
+              {notificationCount > 0 ? (
+                <View className="absolute -right-0.5 -top-0.5 min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-error px-1">
+                  <Text className="font-sans-semibold text-[10px] text-on-error">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </Text>
+                </View>
+              ) : hasNotifications ? (
+                <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-error" />
+              ) : null}
             </Pressable>
-          ) : onInvitePress ? (
+          ) : null}
+          {onInvitePress ? (
             <Pressable
               onPress={onInvitePress}
               accessibilityRole="button"
@@ -116,7 +149,18 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="person-add" size={24} color="#006c49" />
+              <MaterialIcons name="person-add" size={24} color="#1D9E75" />
+            </Pressable>
+          ) : null}
+          {onMenuPress ? (
+            <Pressable
+              onPress={onMenuPress}
+              accessibilityRole="button"
+              accessibilityLabel="Group options"
+              className="rounded-full p-2 active:bg-surface-container-high"
+              hitSlop={8}
+            >
+              <MaterialIcons name="more-vert" size={24} color="#3c4a42" />
             </Pressable>
           ) : null}
         </View>

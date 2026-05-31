@@ -5,6 +5,8 @@ import {
   createGroup as createGroupApi,
   deleteGroup as deleteGroupApi,
   fetchUserGroups,
+  leaveGroup as leaveGroupApi,
+  renameGroup as renameGroupApi,
 } from '@/lib/groups';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { Group } from '@/types/group';
@@ -20,11 +22,14 @@ interface GroupsState {
   createGroup: (name: string, currency?: string) => Promise<Group | null>;
   /** Returns null on success, or an error message. */
   deleteGroup: (groupId: string) => Promise<string | null>;
+  renameGroup: (groupId: string, name: string) => Promise<Group | null>;
+  leaveGroup: (groupId: string) => Promise<string | null>;
   openCreateGroupModal: () => void;
   closeCreateGroupModal: () => void;
   clearError: () => void;
   subscribe: () => void;
   unsubscribe: () => void;
+  reset: () => void;
 }
 
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -89,6 +94,33 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
     }
   },
 
+  renameGroup: async (groupId: string, name: string) => {
+    set({ error: null });
+    try {
+      const group = await renameGroupApi(groupId, name);
+      set((state) => ({
+        groups: state.groups.map((g) => (g.id === groupId ? group : g)),
+      }));
+      return group;
+    } catch (e) {
+      set({ error: getErrorMessage(e, 'Failed to rename group') });
+      return null;
+    }
+  },
+
+  leaveGroup: async (groupId: string) => {
+    set({ error: null });
+    try {
+      await leaveGroupApi(groupId);
+      set((state) => ({
+        groups: state.groups.filter((g) => g.id !== groupId),
+      }));
+      return null;
+    } catch (e) {
+      return getErrorMessage(e, 'Failed to leave group');
+    }
+  },
+
   deleteGroup: async (groupId: string) => {
     set({ isDeleting: true, error: null });
 
@@ -138,5 +170,17 @@ export const useGroupsStore = create<GroupsState>((set, get) => ({
       supabase.removeChannel(realtimeChannel);
       realtimeChannel = null;
     }
+  },
+
+  reset: () => {
+    get().unsubscribe();
+    set({
+      groups: [],
+      isLoading: false,
+      isCreating: false,
+      isDeleting: false,
+      error: null,
+      createGroupModalVisible: false,
+    });
   },
 }));

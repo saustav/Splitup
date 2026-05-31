@@ -1,5 +1,5 @@
 import { normalizeExpenseCategory } from '@/constants/expenseCategories';
-import type { Expense } from '@/types/expense';
+import type { Expense, ExpenseSplit } from '@/types/expense';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 function normalizeExpense(row: Record<string, unknown>): Expense {
@@ -11,10 +11,21 @@ function normalizeExpense(row: Record<string, unknown>): Expense {
     category: normalizeExpenseCategory(row.category as string | null),
     amount: Number(row.amount),
     payer: Array.isArray(payer) ? payer[0] ?? null : payer ?? null,
-    splits: (splits ?? []).map((s) => ({
-      ...s,
-      amount_owed: Number(s.amount_owed),
-    })),
+    splits: (splits ?? []).map((s) => {
+      const raw = s as ExpenseSplit & {
+        profile?:
+          | { display_name: string | null }
+          | { display_name: string | null }[];
+      };
+      const profile = Array.isArray(raw.profile)
+        ? (raw.profile[0] ?? null)
+        : (raw.profile ?? null);
+      return {
+        ...raw,
+        amount_owed: Number(raw.amount_owed),
+        profile,
+      };
+    }),
   };
 }
 
@@ -30,7 +41,13 @@ const expenseSelect = `
   expense_date,
   created_at,
   payer:profiles!expenses_paid_by_profile_fkey ( display_name ),
-  splits:expense_splits ( id, expense_id, user_id, amount_owed )
+  splits:expense_splits (
+    id,
+    expense_id,
+    user_id,
+    amount_owed,
+    profile:profiles!expense_splits_user_profile_fkey ( display_name )
+  )
 `;
 
 export async function fetchExpenseById(expenseId: string): Promise<Expense | null> {
@@ -57,6 +74,7 @@ export async function fetchGroupExpenses(groupId: string): Promise<Expense[]> {
     .from('expenses')
     .select(expenseSelect)
     .eq('group_id', groupId)
+    .order('expense_date', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -76,6 +94,7 @@ export async function createExpense(params: {
   amount: number;
   paidBy?: string;
   category?: string;
+  expenseDate?: string;
   splits?: ExpenseSplitInput[];
 }): Promise<string> {
   if (!isSupabaseConfigured) {
@@ -88,6 +107,7 @@ export async function createExpense(params: {
     p_amount: params.amount,
     p_paid_by: params.paidBy ?? null,
     p_category: params.category ?? 'other',
+    p_expense_date: params.expenseDate ?? null,
     p_splits: params.splits?.length
       ? params.splits.filter((s) => s.amount_owed > 0)
       : null,
@@ -105,6 +125,7 @@ export async function updateExpense(params: {
   amount: number;
   paidBy?: string;
   category?: string;
+  expenseDate?: string;
   splits?: ExpenseSplitInput[];
 }): Promise<void> {
   if (!isSupabaseConfigured) {
@@ -117,6 +138,7 @@ export async function updateExpense(params: {
     p_amount: params.amount,
     p_paid_by: params.paidBy ?? null,
     p_category: params.category ?? null,
+    p_expense_date: params.expenseDate ?? null,
     p_splits: params.splits?.length
       ? params.splits.filter((s) => s.amount_owed > 0)
       : null,
