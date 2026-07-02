@@ -3,6 +3,44 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 241 239 232;
+    --surface: 241 239 232;
+    --surface-container-lowest: 255 255 255;
+    --surface-container-low: 234 243 222;
+    --surface-container: 234 243 222;
+    --surface-container-high: 234 243 222;
+    --on-surface: 44 44 42;
+    --on-surface-variant: 84 83 77;
+    --outline: 84 83 77;
+    --outline-variant: 241 239 232;
+    --primary-container: 234 243 222;
+    --on-primary-container: 8 80 65;
+    --secondary-container: 234 243 222;
+    --on-secondary-container: 8 80 65;
+    --error-container: 252 235 235;
+    --on-error-container: 163 45 45;
+  }
+
+  .dark:root {
+    --background: 28 28 26;
+    --surface: 28 28 26;
+    --surface-container-lowest: 44 44 42;
+    --surface-container-low: 36 52 46;
+    --surface-container: 36 52 46;
+    --surface-container-high: 52 60 56;
+    --on-surface: 241 239 232;
+    --on-surface-variant: 168 166 158;
+    --outline: 168 166 158;
+    --outline-variant: 61 61 58;
+    --primary-container: 36 52 46;
+    --on-primary-container: 234 243 222;
+    --secondary-container: 36 52 46;
+    --on-secondary-container: 234 243 222;
+    --error-container: 74 36 36;
+    --on-error-container: 252 235 235;
+  }
+
   .font-sans {
     font-family: Inter_400Regular, Inter, sans-serif;
     font-weight: 400;

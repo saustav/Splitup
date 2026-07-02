@@ -317,6 +317,122 @@ function mapActivityEvent(
   }
 }
 
+async function fetchEventDedupKeys(groupIds: string[]): Promise<{
+  expenseIds: Set<string>;
+  settlementIds: Set<string>;
+  memberJoinKeys: Set<string>;
+}> {
+  const expenseIds = new Set<string>();
+  const settlementIds = new Set<string>();
+  const memberJoinKeys = new Set<string>();
+
+  const { data, error } = await supabase
+    .from('activity_events')
+    .select('event_type, entity_id, group_id')
+    .in('group_id', groupIds)
+    .not('entity_id', 'is', null)
+    .limit(500);
+
+  if (error) {
+    if (error.code === '42P01' || error.message.includes('activity_events')) {
+      return { expenseIds, settlementIds, memberJoinKeys };
+    }
+    throw error;
+  }
+
+  for (const row of data ?? []) {
+    if (!row.entity_id) continue;
+    if (
+      row.event_type === 'expense_created' ||
+      row.event_type === 'expense_updated' ||
+      row.event_type === 'expense_deleted'
+    ) {
+      expenseIds.add(row.entity_id);
+    }
+    if (
+      row.event_type === 'settlement_completed' ||
+      row.event_type === 'settlement_pending'
+    ) {
+      settlementIds.add(row.entity_id);
+    }
+    if (row.event_type === 'member_joined') {
+      memberJoinKeys.add(`${row.group_id}:${row.entity_id}`);
+    }
+  }
+
+  return { expenseIds, settlementIds, memberJoinKeys };
+}
+
+async function fetchActivityEventsPage(
+  groupIds: string[],
+  userId: string,
+  groupNameById: Record<string, string>,
+  currencyByGroup: Record<string, string>,
+  options: { cursor?: string | null; limit: number }
+): Promise<{
+  items: ActivityItem[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}> {
+  const fetchLimit = options.limit + 1;
+
+  let query = supabase
+    .from('activity_events')
+    .select(
+      'id, group_id, actor_id, event_type, entity_type, entity_id, title, amount, currency, metadata, created_at, groups ( name )'
+    )
+    .in('group_id', groupIds)
+    .order('created_at', { ascending: false })
+    .limit(fetchLimit);
+
+  if (options.cursor) {
+    query = query.lt('created_at', options.cursor);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    if (error.code === '42P01' || error.message.includes('activity_events')) {
+      return { items: [], hasMore: false, nextCursor: null };
+    }
+    throw error;
+  }
+
+  const rows = ((data ?? []) as ActivityEventRow[]).slice(0, options.limit);
+  const hasMore = (data ?? []).length > options.limit;
+
+  const profileIds: string[] = [];
+  for (const row of rows) {
+    if (row.actor_id) profileIds.push(row.actor_id);
+    if (row.entity_id && row.event_type === 'member_joined') {
+      profileIds.push(row.entity_id);
+    }
+    const meta = row.metadata ?? {};
+    if (typeof meta.payer_id === 'string') profileIds.push(meta.payer_id);
+    if (typeof meta.payee_id === 'string') profileIds.push(meta.payee_id);
+  }
+  const profileNames = await loadProfileNames(profileIds);
+
+  const items: ActivityItem[] = [];
+  for (const row of rows) {
+    const item = mapActivityEvent(
+      row,
+      userId,
+      groupNameById,
+      currencyByGroup,
+      profileNames
+    );
+    if (item) items.push(item);
+  }
+
+  const lastRow = rows[rows.length - 1];
+  return {
+    items,
+    hasMore,
+    nextCursor: hasMore && lastRow ? lastRow.created_at : null,
+  };
+}
+
 async function fetchActivityEvents(
   groupIds: string[],
   userId: string,
@@ -422,7 +538,7 @@ async function fetchLegacyActivity(
       .select(expenseSelect)
       .in('group_id', groupIds)
       .order('created_at', { ascending: false })
-      .limit(80),
+      .limit(30),
     supabase
       .from('settlements')
       .select(
@@ -431,13 +547,13 @@ async function fetchLegacyActivity(
       .in('group_id', groupIds)
       .in('status', ['completed', 'pending'])
       .order('created_at', { ascending: false })
-      .limit(40),
+      .limit(15),
     supabase
       .from('group_members')
       .select('id, group_id, user_id, joined_at, groups ( name )')
       .eq('user_id', userId)
       .order('joined_at', { ascending: false })
-      .limit(20),
+      .limit(10),
   ]);
 
   if (expensesRes.error) throw expensesRes.error;
@@ -609,6 +725,91 @@ async function fetchLegacyActivity(
   return items;
 }
 
+export const ACTIVITY_PAGE_SIZE = 25;
+
+export type ActivityPageResult = {
+  items: ActivityItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+export async function fetchUserActivityPage(
+  userId: string,
+  options: { cursor?: string | null; includeLegacy?: boolean } = {}
+): Promise<ActivityPageResult> {
+  if (!isSupabaseConfigured || !userId) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
+  const groups = await fetchUserGroups();
+  if (!groups.length) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
+  const groupIds = groups.map((g) => g.id);
+  const groupNameById = Object.fromEntries(groups.map((g) => [g.id, g.name]));
+  const currencyByGroup = Object.fromEntries(
+    groups.map((g) => [g.id, g.currency ?? 'USD'])
+  );
+
+  const includeLegacy = options.includeLegacy ?? !options.cursor;
+
+  const eventPage = await fetchActivityEventsPage(
+    groupIds,
+    userId,
+    groupNameById,
+    currencyByGroup,
+    { cursor: options.cursor ?? null, limit: ACTIVITY_PAGE_SIZE }
+  );
+
+  let merged = [...eventPage.items];
+  let hasMore = eventPage.hasMore;
+  let nextCursor = eventPage.nextCursor;
+
+  if (includeLegacy) {
+    const dedup = await fetchEventDedupKeys(groupIds);
+    const legacyItems = await fetchLegacyActivity(
+      userId,
+      groupIds,
+      groupNameById,
+      currencyByGroup,
+      {
+        expenseIds: dedup.expenseIds,
+        settlementIds: dedup.settlementIds,
+        memberJoinKeys: dedup.memberJoinKeys,
+      }
+    );
+    merged = [...merged, ...legacyItems].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    const seen = new Set<string>();
+    merged = merged.filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+
+    if (merged.length > ACTIVITY_PAGE_SIZE) {
+      hasMore = true;
+      const lastItem = merged[ACTIVITY_PAGE_SIZE - 1];
+      nextCursor = lastItem?.createdAt ?? nextCursor;
+      merged = merged.slice(0, ACTIVITY_PAGE_SIZE);
+    } else if (eventPage.hasMore) {
+      hasMore = true;
+      nextCursor = eventPage.nextCursor;
+    }
+  }
+
+  return {
+    items: merged,
+    nextCursor,
+    hasMore,
+  };
+}
+
+/** @deprecated Use fetchUserActivityPage for paginated feeds. */
 export async function fetchUserActivity(
   userId: string
 ): Promise<ActivityItem[]> {

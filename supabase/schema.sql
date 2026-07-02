@@ -799,14 +799,14 @@ $$;
 
 grant execute on function public.accept_group_invite(text) to authenticated;
 
--- Settlements (Khalti / eSewa / manual)
+-- Settlements (manual cash payments)
 create table public.settlements (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references public.groups (id) on delete cascade,
   payer_id uuid not null references auth.users (id),
   payee_id uuid not null references auth.users (id),
   amount numeric(12, 2) not null check (amount > 0),
-  provider text not null check (provider in ('khalti', 'esewa', 'manual')),
+  provider text not null check (provider in ('manual')),
   status text not null default 'pending' check (status in ('pending', 'completed', 'cancelled')),
   external_ref text,
   created_at timestamptz default now(),
@@ -847,7 +847,7 @@ begin
     raise exception 'Amount must be greater than zero';
   end if;
 
-  if p_provider not in ('khalti', 'esewa', 'manual') then
+  if p_provider <> 'manual' then
     raise exception 'Invalid payment provider';
   end if;
 
@@ -880,22 +880,20 @@ begin
   )
   returning id into v_id;
 
-  if p_provider = 'manual' then
-    perform public.log_activity_event(
-      p_group_id,
-      'settlement_pending',
-      'settlement',
-      v_id,
-      'Settlement pending',
-      p_amount,
-      null,
-      jsonb_build_object(
-        'payee_id', p_payee_id,
-        'payer_id', auth.uid(),
-        'provider', p_provider
-      )
-    );
-  end if;
+  perform public.log_activity_event(
+    p_group_id,
+    'settlement_pending',
+    'settlement',
+    v_id,
+    'Settlement pending',
+    p_amount,
+    null,
+    jsonb_build_object(
+      'payee_id', p_payee_id,
+      'payer_id', auth.uid(),
+      'provider', p_provider
+    )
+  );
 
   return v_id;
 end;
@@ -945,50 +943,6 @@ end;
 $$;
 
 grant execute on function public.accept_settlement(uuid) to authenticated;
-
-create or replace function public.complete_settlement(p_settlement_id uuid)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_row public.settlements;
-begin
-  if auth.uid() is null then
-    raise exception 'Not authenticated';
-  end if;
-
-  update public.settlements
-  set status = 'completed', completed_at = now()
-  where id = p_settlement_id
-    and payer_id = auth.uid()
-    and status = 'pending'
-    and provider in ('khalti', 'esewa')
-  returning * into v_row;
-
-  if v_row.id is null then
-    raise exception 'Settlement not found or already completed';
-  end if;
-
-  perform public.log_activity_event(
-    v_row.group_id,
-    'settlement_completed',
-    'settlement',
-    v_row.id,
-    'Settlement',
-    v_row.amount,
-    null,
-    jsonb_build_object(
-      'payee_id', v_row.payee_id,
-      'payer_id', v_row.payer_id,
-      'provider', v_row.provider
-    )
-  );
-end;
-$$;
-
-grant execute on function public.complete_settlement(uuid) to authenticated;
 
 -- Realtime (enable in Dashboard → Database → Replication if needed)
 -- alter publication supabase_realtime add table public.groups;

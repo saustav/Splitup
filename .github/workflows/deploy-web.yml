@@ -5,9 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 env:
   APP_WEB_URL: https://splitup.mantradigital.com.np
 
@@ -31,12 +28,15 @@ jobs:
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
           EXPO_PUBLIC_AUTH_REDIRECT_ORIGIN: ${{ env.APP_WEB_URL }}
 
-      - name: Add GitHub Pages SPA fallback
+      - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
-      - name: Publish dist to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          cname: splitup.mantradigital.com.np
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /home/u461920479/domains/mantradigital.com.np/public_html/splitup/
+          dangerous-clean-slate: false

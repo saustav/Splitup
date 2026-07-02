@@ -3,7 +3,7 @@ import { Switch, Text, View } from 'react-native';
 
 type ProfileToggleRowProps = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
   showDivider?: boolean;
@@ -30,9 +30,11 @@ export function ProfileToggleRow({
         ) : null}
         <View className="min-w-0 flex-1">
           <Text className="font-sans-medium text-body-md text-on-surface">{title}</Text>
-          <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
-            {subtitle}
-          </Text>
+          {subtitle ? (
+            <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
+              {subtitle}
+            </Text>
+          ) : null}
         </View>
       </View>
       <Switch

@@ -1,6 +1,6 @@
 # Split It
 
-Split bills with friends — built for Nepal with Khalti and eSewa payments.
+Split bills with friends — track expenses, balances, and settle up in cash.
 
 ## Tech stack
 
@@ -13,8 +13,7 @@ Split bills with friends — built for Nepal with Khalti and eSewa payments.
 | State           | Zustand                                 |
 | Navigation      | Expo Router                             |
 | Push            | Expo Notifications                      |
-| Payments        | Khalti, eSewa                           |
-| Web hosting     | GitHub Pages (`splitup.mantradigital.com.np`) |
+| Web hosting     | Hostinger (`splitup.mantradigital.com.np`)    |
 | Version control | GitHub                                  |
 
 ## Getting started
@@ -27,7 +26,7 @@ npm install
 
 ### 2. Environment variables
 
-Copy `.env.example` to `.env` and fill in your Supabase and payment keys:
+Copy `.env.example` to `.env` and fill in your Supabase keys:
 
 ```bash
 cp .env.example .env
@@ -52,7 +51,7 @@ npx expo start -c
 ```
 app/              # Expo Router screens (file-based routes)
 components/       # Reusable UI components
-lib/              # Supabase client, notifications, payments
+lib/              # Supabase client, notifications, business logic
 stores/           # Zustand stores (auth, etc.)
 constants/        # Theme colors and shared values
 ```
@@ -64,14 +63,13 @@ constants/        # Theme colors and shared values
 3. Run `supabase/schema.sql` in the Supabase SQL Editor.
 4. Enable **Google** and **Apple** under **Auth → Sign In / Providers**.
 5. Under **Auth → URL Configuration**:
-   - **Site URL:** your production web URL (e.g. `https://splitup.mantradigital.com.np`)
-   - **Redirect URLs** (add every URL below — if localhost is missing, OAuth falls back to Site URL and local sign-in opens the live site):
-     - `https://splitup.mantradigital.com.np/auth/callback`
-     - `http://localhost:8081/auth/callback` (match the port shown when you run `npx expo start`)
-     - `http://127.0.0.1:8081/auth/callback`
-     - `splitup://**` (iOS/Android)
-     - `splitup://auth/callback` (optional exact match)
-   - In dev on web, the login screen shows the exact callback URL to whitelist.
+
+- **Site URL:** `https://splitup.mantradigital.com.np`
+- **Redirect URLs** (add every URL below — if production is missing, OAuth falls back to Site URL and may send you to `localhost`):
+  - `https://splitup.mantradigital.com.np/auth/callback`
+  - `http://localhost:8081/auth/callback` (match the port shown when you run `npx expo start`)
+  - `http://127.0.0.1:8081/auth/callback`
+  - `splitup://**` (iOS/Android)
 6. For Google on iOS: in Supabase **Auth → Providers → Google**, enable **Skip nonce check** if sign-in fails after Google consent.
 
 Sign-in uses `app/(auth)/login.tsx`. Web OAuth completes on `app/auth/callback.tsx`. Signed-in users are routed to tabs via `Stack.Protected`.
@@ -99,30 +97,33 @@ Run `supabase/invites-settlements-migration.sql` if upgrading an existing databa
 | **Invite friends**  | Group screen → **Invite** → share link or code (`splitup://invite/CODE`)                                       |
 | **Join via invite** | Friend opens link while signed in → joins group                                                                |
 | **Unequal splits**  | Add expense → **Custom** → enter amount per person (must sum to total)                                         |
-| **Settle up**       | Group screen → **Settle up** → pay via **Khalti** or **eSewa**                                                 |
-| **Payment keys**    | Add Khalti/eSewa vars to `.env`; use a Supabase Edge Function for live checkout (see `lib/payments/README.md`) |
+| **Settle up**       | Group screen → **Settle up** → **Record payment** (payee confirms receipt) |
 
-Settlements simplify debts (fewest payments) and record payment history. Tap **I've paid** after completing payment in the browser.
+Settlements simplify debts (fewest payments) and record cash payment history. The payee must confirm before balances update.
 
-## Payments (Khalti & eSewa)
+If your database was created before payment integrations were removed, run `supabase/remove-payment-integrations-migration.sql` in the Supabase SQL Editor.
 
-Secret keys must live on the server. Use Supabase Edge Functions to initiate payments and verify webhooks. See `lib/payments/README.md`.
-
-## Deploy web (GitHub Pages)
+## Deploy web (Hostinger)
 
 Production URL: **https://splitup.mantradigital.com.np**
 
-Pushes to `main` build `dist/` and publish it to the `gh-pages` branch via `.github/workflows/deploy-web.yml`. Only the static export is deployed — source code stays on `main`.
+Pushes to `main` build `dist/` and upload it to Hostinger via FTP using `.github/workflows/deploy-web.yml`. Only the static export is deployed — source code stays on `main`.
 
 ### One-time GitHub setup
 
-1. **Actions secrets** (Settings → Secrets and variables → Actions):
-   - `EXPO_PUBLIC_SUPABASE_URL`
-   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-2. **GitHub Pages** (Settings → Pages):
-   - Source: branch `gh-pages` / root
-   - Custom domain: `splitup.mantradigital.com.np`
-3. **DNS** (at your domain registrar): point `splitup.mantradigital.com.np` to GitHub Pages (CNAME to `<user>.github.io` or A records per [GitHub docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)).
+**Actions secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+| ------ | ----------- |
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `FTP_HOST` | Hostinger FTP hostname (e.g. `ftp.mantradigital.com.np`) |
+| `FTP_USERNAME` | Hostinger FTP username |
+| `FTP_PASSWORD` | Hostinger FTP password |
+
+### Hostinger
+
+Files are uploaded to `/home/u461920479/domains/mantradigital.com.np/public_html/splitup/`. Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
 
 ### Supabase (production)
 
@@ -137,17 +138,8 @@ Under **Auth → URL Configuration**:
 npm run build:web
 ```
 
-The workflow also copies `index.html` to `404.html` for client-side routing on GitHub Pages.
+Then upload everything inside `dist/` to your Hostinger document root (same path as above).
 
 ## Push notifications
 
 Call `registerForPushNotifications()` from `lib/notifications.ts` after the user signs in, then save the Expo push token to Supabase.
-
-## WhatsApp bot
-
-Text expenses to your WhatsApp Business number (e.g. `50 dinner`). Users link their phone under **Account → Integrations**.
-
-1. Run `supabase/whatsapp-bot-migration.sql`
-2. Deploy `supabase/functions/whatsapp-webhook` with Meta API credentials
-
-See `lib/whatsapp/README.md` for commands and setup.

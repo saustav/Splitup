@@ -17,12 +17,10 @@ import {
   useEnrichedPendingSettlements,
 } from '@/components/PendingSettlementsSection';
 import { TopAppBar } from '@/components/TopAppBar';
-import { PAYMENT_INTEGRATIONS_ENABLED } from '@/constants/app';
 import { balanceTone } from '@/lib/balanceDisplay';
 import { settlementAmountForDebt } from '@/lib/balances';
 import { formatMoney } from '@/lib/currency';
 import { fetchGroupById } from '@/lib/groups';
-import { getPaymentSetupHint, startSettlementPayment } from '@/lib/payments/settle';
 import { platformShadow } from '@/lib/platformShadow';
 import {
   enrichDebts,
@@ -109,37 +107,6 @@ export default function SettleUpScreen() {
     }
   }
 
-  async function handleOnlinePay(
-    debt: SimplifiedDebt,
-    provider: 'khalti' | 'esewa'
-  ) {
-    if (!groupId || !user) return;
-
-    const key = `${debt.to_user_id}-${provider}`;
-    setRecordingKey(key);
-
-    try {
-      await startSettlementPayment({
-        groupId,
-        payeeId: debt.to_user_id,
-        payeeName: debt.to_name,
-        amount: debt.amount,
-        provider,
-      });
-      await loadForGroup(groupId);
-      Alert.alert('Success', `Marked payment to ${debt.to_name} as completed.`);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Payment failed';
-      if (msg !== 'Payment cancelled') {
-        Alert.alert('Payment', msg);
-      }
-    } finally {
-      setRecordingKey(null);
-    }
-  }
-
-  const setupHint = PAYMENT_INTEGRATIONS_ENABLED ? getPaymentSetupHint() : '';
-
   return (
     <View className="flex-1 bg-background">
       <TopAppBar title="Settle up" showBack />
@@ -174,12 +141,6 @@ export default function SettleUpScreen() {
               }
             }}
           />
-        ) : null}
-
-        {setupHint ? (
-          <Text className="font-sans text-label-md text-amber-700 dark:text-amber-400">
-            {setupHint}
-          </Text>
         ) : null}
 
         {myDebts.length === 0 ? (
@@ -234,29 +195,6 @@ export default function SettleUpScreen() {
                     </>
                   )}
                 </Pressable>
-
-                {PAYMENT_INTEGRATIONS_ENABLED ? (
-                  <View className="mt-sm flex-row gap-sm">
-                    <Pressable
-                      onPress={() => handleOnlinePay(debt, 'khalti')}
-                      disabled={recordingKey !== null}
-                      className="flex-1 rounded-xl bg-purple-600 py-sm active:opacity-90 disabled:opacity-50"
-                    >
-                      <Text className="text-center font-sans-semibold text-body-md text-white">
-                        Khalti
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => handleOnlinePay(debt, 'esewa')}
-                      disabled={recordingKey !== null}
-                      className="flex-1 rounded-xl bg-green-700 py-sm active:opacity-90 disabled:opacity-50"
-                    >
-                      <Text className="text-center font-sans-semibold text-body-md text-white">
-                        eSewa
-                      </Text>
-                    </Pressable>
-                  </View>
-                ) : null}
               </View>
             );
           })

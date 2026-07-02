@@ -8,8 +8,7 @@ const STACK = [
   { name: 'Zustand', role: 'Lightweight global state' },
   { name: 'Expo Router', role: 'File-based navigation' },
   { name: 'Expo Notifications', role: 'Push notifications' },
-  { name: 'Khalti & eSewa', role: 'Nepal payment gateways' },
-  { name: 'Vercel', role: 'Web hosting' },
+  { name: 'GitHub Pages', role: 'Web hosting' },
   { name: 'GitHub', role: 'Version control' },
 ];
 

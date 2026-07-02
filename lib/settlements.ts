@@ -220,7 +220,7 @@ export async function createSettlement(params: {
   groupId: string;
   payeeId: string;
   amount: number;
-  provider: 'khalti' | 'esewa' | 'manual';
+  provider: 'manual';
 }): Promise<string> {
   if (!isSupabaseConfigured) {
     throw new Error('Supabase is not configured');
@@ -235,17 +235,4 @@ export async function createSettlement(params: {
 
   if (error) throw error;
   return data as string;
-}
-
-/** Online payments only — manual settlements require payee acceptance. */
-export async function completeSettlement(settlementId: string): Promise<void> {
-  if (!isSupabaseConfigured) {
-    throw new Error('Supabase is not configured');
-  }
-
-  const { error } = await supabase.rpc('complete_settlement', {
-    p_settlement_id: settlementId,
-  });
-
-  if (error) throw error;
 }

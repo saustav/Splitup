@@ -5,11 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppLogo } from '@/components/AppLogo';
 import { goBackOrHome, HOME_ROUTE } from '@/lib/navigation';
+import { useThemeStore } from '@/stores/themeStore';
 
 type TopAppBarProps = {
   /** Page context shown under the app logo (e.g. group name). */
   title?: string;
-  onWalletPress?: () => void;
   onNotificationsPress?: () => void;
   /** Show bell; use with `notificationCount` for pending actions. */
   showNotifications?: boolean;
@@ -29,7 +29,6 @@ const SIDE_WIDTH_WITH_ACTIONS = 120;
 
 export function TopAppBar({
   title,
-  onWalletPress,
   onNotificationsPress,
   showNotifications = false,
   hasNotifications = false,
@@ -41,6 +40,9 @@ export function TopAppBar({
 }: TopAppBarProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const themeMode = useThemeStore((s) => s.mode);
+  const toggleTheme = useThemeStore((s) => s.toggle);
+  const isDark = themeMode === 'dark';
 
   function handleBack() {
     if (onBackPress && router.canGoBack()) {
@@ -86,13 +88,17 @@ export function TopAppBar({
             </Pressable>
           ) : (
             <Pressable
-              onPress={onWalletPress}
+              onPress={toggleTheme}
               accessibilityRole="button"
-              accessibilityLabel="Wallet"
+              accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="account-balance-wallet" size={24} color="#54534D" />
+              <MaterialIcons
+                name={isDark ? 'light-mode' : 'dark-mode'}
+                size={24}
+                color={isDark ? '#EAF3DE' : '#54534D'}
+              />
             </Pressable>
           )}
         </View>

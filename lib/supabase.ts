@@ -34,6 +34,7 @@ export const supabase = createClient(
       storage: authStorage,
       autoRefreshToken: true,
       persistSession: true,
+      flowType: 'pkce',
       // Web: Supabase reads ?code= from the URL on getSession(). Native uses auth/callback.tsx.
       detectSessionInUrl: Platform.OS === 'web',
     },

@@ -16,7 +16,7 @@ import { LoginBackground } from "@/components/LoginBackground";
 import { OAuthButton } from "@/components/OAuthButton";
 import { APP_NAME } from "@/constants/app";
 import { uiColors } from "@/constants/theme";
-import { signInWithOAuth } from "@/lib/auth";
+import { signInWithOAuth, getAuthRedirectUri } from "@/lib/auth";
 import { platformShadow } from "@/lib/platformShadow";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
@@ -144,6 +144,18 @@ export default function LoginScreen() {
               <View className="mt-lg w-full max-w-[280px] rounded-xl bg-amber-50 px-md py-md dark:bg-amber-950/40">
                 <Text className="text-center font-sans text-label-md text-amber-800 dark:text-amber-200">
                   Add Supabase keys to .env to enable sign-in
+                </Text>
+              </View>
+            ) : Platform.OS === "web" ? (
+              <View className="mt-lg w-full max-w-[280px] rounded-xl bg-surface-container-low px-md py-md">
+                <Text className="text-center font-sans text-label-md text-on-surface-variant">
+                  OAuth callback (add to Supabase → Auth → Redirect URLs):
+                </Text>
+                <Text
+                  selectable
+                  className="mt-xs text-center font-sans text-label-md text-primary"
+                >
+                  {getAuthRedirectUri()}
                 </Text>
               </View>
             ) : null}

@@ -1,10 +1,10 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
-  ScrollView,
+  SectionList,
   Text,
   TextInput,
   View,
@@ -18,7 +18,7 @@ import {
   filterActivities,
   groupActivitiesByDay,
   searchActivities,
-  fetchUserActivity,
+  fetchUserActivityPage,
   type ActivityFilter,
   type ActivityItem,
 } from '@/lib/activity';
@@ -27,6 +27,19 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 
+function mergeActivityItems(
+  existing: ActivityItem[],
+  incoming: ActivityItem[],
+): ActivityItem[] {
+  if (!incoming.length) return existing;
+
+  const seen = new Set(existing.map((item) => item.id));
+  const next = incoming.filter((item) => !seen.has(item.id));
+  if (!next.length) return existing;
+
+  return [...existing, ...next];
+}
+
 export default function ActivityScreen() {
   const user = useAuthStore((s) => s.user);
   const notificationCount = usePendingActionsStore((s) => s.totalCount);
@@ -34,16 +47,23 @@ export default function ActivityScreen() {
   const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
 
   const [items, setItems] = useState<ActivityItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<ActivityFilter>('all');
 
-  const load = useCallback(
+  const isLoadingMoreRef = useRef(false);
+
+  const loadInitial = useCallback(
     async (silent = false) => {
       if (!user?.id || !isSupabaseConfigured) {
         setItems([]);
+        setCursor(null);
+        setHasMore(false);
         setIsLoading(false);
         setIsRefreshing(false);
         return;
@@ -53,8 +73,10 @@ export default function ActivityScreen() {
       setError(null);
 
       try {
-        const data = await fetchUserActivity(user.id);
-        setItems(data);
+        const page = await fetchUserActivityPage(user.id, { includeLegacy: true });
+        setItems(page.items);
+        setCursor(page.nextCursor);
+        setHasMore(page.hasMore);
       } catch (e) {
         setError(getErrorMessage(e, 'Failed to load activity'));
       } finally {
@@ -62,14 +84,41 @@ export default function ActivityScreen() {
         setIsRefreshing(false);
       }
     },
-    [user?.id]
+    [user?.id],
   );
+
+  const loadMore = useCallback(async () => {
+    if (
+      !user?.id ||
+      !isSupabaseConfigured ||
+      !hasMore ||
+      !cursor ||
+      isLoadingMoreRef.current
+    ) {
+      return;
+    }
+
+    isLoadingMoreRef.current = true;
+    setIsLoadingMore(true);
+
+    try {
+      const page = await fetchUserActivityPage(user.id, { cursor });
+      setItems((current) => mergeActivityItems(current, page.items));
+      setCursor(page.nextCursor);
+      setHasMore(page.hasMore);
+    } catch (e) {
+      setError(getErrorMessage(e, 'Failed to load more activity'));
+    } finally {
+      isLoadingMoreRef.current = false;
+      setIsLoadingMore(false);
+    }
+  }, [cursor, hasMore, user?.id]);
 
   useFocusEffect(
     useCallback(() => {
-      load(true);
+      loadInitial(true);
       refreshPendingActions();
-    }, [load, refreshPendingActions]),
+    }, [loadInitial, refreshPendingActions]),
   );
 
   useEffect(() => {
@@ -85,61 +134,41 @@ export default function ActivityScreen() {
           table: 'activity_events',
         },
         () => {
-          load(true);
-        }
+          loadInitial(true);
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, load]);
+  }, [user?.id, loadInitial]);
 
   const filtered = useMemo(() => {
     const byType = filterActivities(items, filter);
     return searchActivities(byType, searchQuery);
   }, [items, filter, searchQuery]);
 
-  const dayGroups = useMemo(() => groupActivitiesByDay(filtered), [filtered]);
+  const sections = useMemo(
+    () =>
+      groupActivitiesByDay(filtered).map((group) => ({
+        title: group.label,
+        data: group.items,
+      })),
+    [filtered],
+  );
+
   const counts = useMemo(() => activityFilterCounts(items), [items]);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
-    load(true);
+    loadInitial(true);
     refreshPendingActions();
-  }, [load, refreshPendingActions]);
+  }, [loadInitial, refreshPendingActions]);
 
-  return (
-    <View className="flex-1 bg-background">
-      <TopAppBar
-        title="Activity Feed"
-        showNotifications
-        notificationCount={notificationCount}
-        onNotificationsPress={openNotifications}
-      />
-
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 120,
-          maxWidth: 900,
-          width: '100%',
-          alignSelf: 'center',
-          flexGrow: 1,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor="#0F6E56"
-            colors={['#0F6E56']}
-            title={isRefreshing ? 'Refreshing…' : undefined}
-          />
-        }
-        keyboardShouldPersistTaps="handled"
-      >
+  const listHeader = useMemo(
+    () => (
+      <View>
         <View className="relative mb-lg">
           <MaterialIcons
             name="search"
@@ -161,54 +190,107 @@ export default function ActivityScreen() {
             Refreshing from Supabase…
           </Text>
         ) : null}
+      </View>
+    ),
+    [isLoading, isRefreshing, searchQuery],
+  );
 
-        <View className="flex-col gap-lg">
-          <View className="flex-1 gap-stack-gap">
-            {isLoading ? (
-              <View className="items-center py-16">
-                <ActivityIndicator size="large" color="#0F6E56" />
-              </View>
-            ) : error ? (
-              <View className="rounded-xl bg-error-container p-md">
-                <Text className="text-center font-sans text-body-md text-on-error-container">
-                  {error}
-                </Text>
-                <Text
-                  onPress={handleRefresh}
-                  className="mt-sm text-center font-sans-semibold text-body-md text-primary"
-                >
-                  Tap to retry
-                </Text>
-              </View>
-            ) : dayGroups.length === 0 ? (
-              <View className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-lg">
-                <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
-                  No activity yet
-                </Text>
-                <Text className="mt-2 text-center font-sans text-body-md text-on-surface-variant">
-                  Add an expense, share an invite, or settle up in a group to see
-                  updates here. Pull down to refresh.
-                </Text>
-              </View>
-            ) : (
-              dayGroups.map((group) => (
-                <View key={group.label}>
-                  <Text className="mb-sm px-sm font-sans-semibold text-label-md text-on-surface-variant">
-                    {group.label}
-                  </Text>
-                  <View className="gap-sm">
-                    {group.items.map((item) => (
-                      <ActivityCard key={item.id} item={item} />
-                    ))}
-                  </View>
-                </View>
-              ))
-            )}
+  const listFooter = useMemo(
+    () => (
+      <View className="gap-lg pt-lg">
+        {isLoadingMore ? (
+          <View className="items-center py-md">
+            <ActivityIndicator size="small" color="#0F6E56" />
+            <Text className="mt-sm font-sans text-label-md text-on-surface-variant">
+              Loading more…
+            </Text>
           </View>
+        ) : null}
 
-          <ActivityFilters active={filter} counts={counts} onChange={setFilter} />
-        </View>
-      </ScrollView>
+        {!isLoading && !hasMore && items.length > 0 ? (
+          <Text className="text-center font-sans text-label-md text-on-surface-variant">
+            You&apos;re all caught up
+          </Text>
+        ) : null}
+
+        <ActivityFilters active={filter} counts={counts} onChange={setFilter} />
+      </View>
+    ),
+    [counts, filter, hasMore, isLoading, isLoadingMore, items.length],
+  );
+
+  return (
+    <View className="flex-1 bg-background">
+      <TopAppBar
+        title="Activity Feed"
+        showNotifications
+        notificationCount={notificationCount}
+        onNotificationsPress={openNotifications}
+      />
+
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ActivityCard item={item} />}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text className="mb-sm mt-md bg-background px-sm font-sans-semibold text-label-md text-on-surface-variant">
+            {title}
+          </Text>
+        )}
+        ListHeaderComponent={listHeader}
+        ListFooterComponent={listFooter}
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 120,
+          maxWidth: 900,
+          width: '100%',
+          alignSelf: 'center',
+          flexGrow: 1,
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#0F6E56"
+            colors={['#0F6E56']}
+            title={isRefreshing ? 'Refreshing…' : undefined}
+          />
+        }
+        keyboardShouldPersistTaps="handled"
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.35}
+        ListEmptyComponent={
+          isLoading ? (
+            <View className="items-center py-16">
+              <ActivityIndicator size="large" color="#0F6E56" />
+            </View>
+          ) : error ? (
+            <View className="rounded-xl bg-error-container p-md">
+              <Text className="text-center font-sans text-body-md text-on-error-container">
+                {error}
+              </Text>
+              <Text
+                onPress={handleRefresh}
+                className="mt-sm text-center font-sans-semibold text-body-md text-primary"
+              >
+                Tap to retry
+              </Text>
+            </View>
+          ) : (
+            <View className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-lg">
+              <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
+                No activity yet
+              </Text>
+              <Text className="mt-sm text-center font-sans text-body-md text-on-surface-variant">
+                Add an expense, share an invite, or settle up in a group to see
+                updates here. Pull down to refresh.
+              </Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 }

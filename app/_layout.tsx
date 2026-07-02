@@ -7,7 +7,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { Stack, usePathname } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { LogBox, Platform } from 'react-native';
@@ -18,7 +18,9 @@ if (__DEV__ && Platform.OS === 'web') {
 }
 
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { urlHasOAuthPayload } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
+import { useThemeStore } from '@/stores/themeStore';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -34,9 +36,24 @@ export default function RootLayout() {
   const initialize = useAuthStore((s) => s.initialize);
   const isLoading = useAuthStore((s) => s.isLoading);
   const session = useAuthStore((s) => s.session);
+  const initializeTheme = useThemeStore((s) => s.initialize);
+  const themeHydrated = useThemeStore((s) => s.hydrated);
   const pathname = usePathname();
+  const router = useRouter();
   const isOAuthCallback =
     pathname === '/auth/callback' || pathname?.endsWith('/auth/callback');
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    if (!urlHasOAuthPayload(window.location.href)) return;
+
+    const path = window.location.pathname || '/';
+    const onCallback =
+      path === '/auth/callback' || path.endsWith('/auth/callback');
+    if (!onCallback) {
+      router.replace('/auth/callback');
+    }
+  }, [router]);
 
   useEffect(() => {
     if (error) throw error;
@@ -44,7 +61,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    void initializeTheme();
+  }, [initialize, initializeTheme]);
 
   useEffect(() => {
     if (loaded && !isLoading) {
@@ -52,7 +70,7 @@ export default function RootLayout() {
     }
   }, [loaded, isLoading]);
 
-  if ((!loaded || isLoading) && !isOAuthCallback) {
+  if ((!loaded || isLoading || !themeHydrated) && !isOAuthCallback) {
     return <LoadingScreen />;
   }
 

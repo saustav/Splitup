@@ -6,12 +6,10 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AutosaveIndicator } from "@/components/AutosaveIndicator";
 import { CurrencyPicker } from "@/components/CurrencyPicker";
-import { PaymentMethodRow } from "@/components/PaymentMethodRow";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { ProfileTextField } from "@/components/ProfileTextField";
 import { ProfileToggleRow } from "@/components/ProfileToggleRow";
 import { TopAppBar } from "@/components/TopAppBar";
-import { WhatsAppBotCard } from "@/components/WhatsAppBotCard";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { useAutosaveStatus } from "@/hooks/useAutosaveStatus";
 import {
@@ -26,7 +24,6 @@ import {
     loadProfilePreferences,
     saveProfilePreferences,
     updateUserProfile,
-    type PaymentMethod,
     type ProfilePreferences,
     type UserProfile,
 } from "@/lib/profile";
@@ -164,41 +161,6 @@ export default function AccountScreen() {
     );
   }
 
-  function addPaymentMethod(type: PaymentMethod["type"], name: string) {
-    const method: PaymentMethod = {
-      id: `${Date.now()}`,
-      type,
-      name,
-      masked: type === "wallet" ? "9841******" : "**** 4582",
-    };
-    void persistPrefs({
-      ...prefs,
-      paymentMethods: [...prefs.paymentMethods, method],
-    });
-  }
-
-  function handleAddPaymentMethod() {
-    Alert.alert("Add payment method", "Choose a type to add", [
-      {
-        text: "Bank account",
-        onPress: () => addPaymentMethod("bank", "Bank account"),
-      },
-      {
-        text: "eSewa / Khalti",
-        onPress: () => addPaymentMethod("wallet", "eSewa ID"),
-      },
-      { text: "Cancel", style: "cancel" },
-    ]);
-  }
-
-  function handleDeletePaymentMethod(id: string) {
-    const next = {
-      ...prefs,
-      paymentMethods: prefs.paymentMethods.filter((m) => m.id !== id),
-    };
-    void persistPrefs(next);
-  }
-
   function handleDeactivate() {
     Alert.alert(
       "Deactivate account",
@@ -313,7 +275,6 @@ export default function AccountScreen() {
             </View>
             <ProfileToggleRow
               title="Show converted amounts"
-              subtitle="≈ values in your default currency (daily rates via Frankfurter)"
               value={prefs.showConvertedToDefaultCurrency ?? true}
               onValueChange={(showConvertedToDefaultCurrency) => {
                 const next = {
@@ -327,47 +288,6 @@ export default function AccountScreen() {
               icon="currency-exchange"
             />
           </View>
-        </View>
-
-        <View className="gap-stack-gap">
-          <SectionTitle>Integrations</SectionTitle>
-          <WhatsAppBotCard
-            phone={prefs.phone}
-            onPhoneChange={(phone) => {
-              const next = { ...prefs, phone };
-              setPrefs(next);
-              void persistPrefs(next);
-            }}
-          />
-        </View>
-
-        <View className="gap-stack-gap">
-          <View className="flex-row items-center justify-between px-1">
-            <SectionTitle>Payment Methods</SectionTitle>
-            <Pressable onPress={handleAddPaymentMethod}>
-              <Text className="font-sans-semibold text-label-md text-primary">
-                + Add New
-              </Text>
-            </Pressable>
-          </View>
-          {prefs.paymentMethods.length === 0 ? (
-            <View className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-md">
-              <Text className="text-center font-sans text-body-md text-on-surface-variant">
-                No payment methods yet. Tap + Add New to add Khalti, eSewa, or a
-                bank account.
-              </Text>
-            </View>
-          ) : (
-            <View className="gap-sm">
-              {prefs.paymentMethods.map((method) => (
-                <PaymentMethodRow
-                  key={method.id}
-                  method={method}
-                  onDelete={() => handleDeletePaymentMethod(method.id)}
-                />
-              ))}
-            </View>
-          )}
         </View>
 
         <View className="gap-stack-gap">

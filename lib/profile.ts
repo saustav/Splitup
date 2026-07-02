@@ -10,13 +10,6 @@ export type UserProfile = {
   email: string;
 };
 
-export type PaymentMethod = {
-  id: string;
-  type: 'bank' | 'wallet';
-  name: string;
-  masked: string;
-};
-
 export type ProfilePreferences = {
   phone: string;
   defaultCurrency: string;
@@ -32,7 +25,6 @@ export type ProfilePreferences = {
     publicProfile: boolean;
     twoFactorAuth: boolean;
   };
-  paymentMethods: PaymentMethod[];
 };
 
 const PREFS_KEY = (userId: string) => `profile_prefs:${userId}`;
@@ -51,7 +43,6 @@ export const DEFAULT_PROFILE_PREFERENCES: ProfilePreferences = {
     publicProfile: true,
     twoFactorAuth: false,
   },
-  paymentMethods: [],
 };
 
 export async function fetchUserProfile(
@@ -110,7 +101,6 @@ export async function loadProfilePreferences(
         ...DEFAULT_PROFILE_PREFERENCES.privacy,
         ...parsed.privacy,
       },
-      paymentMethods: parsed.paymentMethods ?? [],
     };
   } catch {
     return { ...DEFAULT_PROFILE_PREFERENCES };

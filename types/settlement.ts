@@ -1,4 +1,4 @@
-export type PaymentProvider = 'khalti' | 'esewa' | 'manual';
+export type PaymentProvider = 'manual';
 
 export type SimplifiedDebt = {
   from_user_id: string;

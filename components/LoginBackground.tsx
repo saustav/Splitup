@@ -4,13 +4,16 @@ import { colors } from '@/constants/theme';
 
 /**
  * Decorative login backdrop — soft brand gradient with organic blobs.
- * pointerEvents="none" so it never blocks taps.
+ * Uses style.pointerEvents so taps pass through to content above.
  */
 export function LoginBackground({ topInset = 0 }: { topInset?: number }) {
   const heroHeight = 340 + topInset;
 
   return (
-    <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+    <View
+      className="absolute inset-0 overflow-hidden"
+      style={{ pointerEvents: 'none' }}
+    >
       {/* Base: warm cream → white wash */}
       <View
         className="absolute inset-0 bg-background"

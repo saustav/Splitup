@@ -20,12 +20,9 @@ let oauthCallbackUrlSnapshot: string | null = null;
 function snapshotOAuthCallbackUrl() {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
-  const { pathname, href } = window.location;
-  const onCallback =
-    pathname === `/${AUTH_CALLBACK_PATH}` ||
-    pathname.endsWith(`/${AUTH_CALLBACK_PATH}`);
+  const { href } = window.location;
 
-  if (onCallback && urlHasOAuthPayload(href)) {
+  if (urlHasOAuthPayload(href)) {
     oauthCallbackUrlSnapshot = href;
   }
 }
@@ -40,7 +37,11 @@ snapshotOAuthCallbackUrl();
  */
 export function getAuthRedirectUri(): string {
   if (Platform.OS === 'web') {
-    // Optional override when the dev server origin differs from what Supabase expects.
+    // Prefer the live browser origin so production never sends a baked-in localhost URL.
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return `${window.location.origin}/${AUTH_CALLBACK_PATH}`;
+    }
+
     const originOverride = process.env.EXPO_PUBLIC_AUTH_REDIRECT_ORIGIN?.replace(
       /\/$/,
       ''
@@ -49,11 +50,6 @@ export function getAuthRedirectUri(): string {
       return `${originOverride}/${AUTH_CALLBACK_PATH}`;
     }
 
-    // Match the browser origin exactly — avoids localhost vs 127.0.0.1 / port mismatches
-    // that cause Supabase to redirect without ?code=.
-    if (typeof window !== 'undefined' && window.location?.origin) {
-      return `${window.location.origin}/${AUTH_CALLBACK_PATH}`;
-    }
     return makeRedirectUri({
       path: AUTH_CALLBACK_PATH,
       preferLocalhost: true,
