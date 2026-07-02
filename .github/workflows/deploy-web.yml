@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
           server-dir: /home/u461920479/domains/mantradigital.com.np/public_html/splitup/
-          dangerous-clean-slate: false
+          dangerous-clean-slate: true
           protocol: ftps
           port: 21
           security: loose
