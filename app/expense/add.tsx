@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import { AddExpenseForm } from '@/components/AddExpenseForm';
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { uiColors } from '@/constants/theme';
 import {
   getPushNotificationHelpMessage,
@@ -146,8 +146,9 @@ export default function AddExpenseScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar
-        title="Add New Expense"
+      <ScreenHeader
+        variant="stack"
+        title="Add expense"
         showBack
         hasNotifications
         onNotificationsPress={handleEnableNotifications}

@@ -62,19 +62,19 @@ export function CurrencyPicker({
         className={
           isProfile
             ? 'h-12 flex-row items-center justify-between rounded-lg border border-outline-variant bg-background px-md'
-            : 'flex-row items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-800'
+            : 'flex-row items-center justify-between rounded-card border border-outline-variant/40 bg-surface-container-low px-md py-sm'
         }
       >
         <View className="min-w-0 flex-1">
           {!isProfile ? (
-            <Text className="text-xs font-medium text-neutral-500">Currency</Text>
+            <Text className="font-sans text-label-md text-on-surface-variant">Currency</Text>
           ) : null}
           {selected ? (
             <Text
               className={
                 isProfile
                   ? 'font-sans text-body-md text-on-surface'
-                  : 'mt-xs text-base text-neutral-900 dark:text-white'
+                  : 'mt-xs font-sans text-body-md text-on-surface'
               }
             >
               {selected.flag} {selected.code} ({selected.symbol})
@@ -84,14 +84,14 @@ export function CurrencyPicker({
               className={
                 isProfile
                   ? 'font-sans text-body-md text-on-surface-variant'
-                  : 'mt-xs text-base text-neutral-500'
+                  : 'mt-xs font-sans text-body-md text-on-surface-variant'
               }
             >
               Select currency
             </Text>
           )}
           {!isProfile && selected ? (
-            <Text className="text-xs text-neutral-500">
+            <Text className="font-sans text-label-md text-on-surface-variant">
               {selected.country} ({selected.countryCode})
             </Text>
           ) : null}
@@ -99,27 +99,27 @@ export function CurrencyPicker({
         <MaterialIcons
           name="expand-more"
           size={24}
-          color={isProfile ? uiColors.muted : '#737373'}
+          color={uiColors.muted}
         />
       </Pressable>
 
       <Modal visible={open} animationType="slide" transparent>
         <View className="flex-1 justify-end bg-black/40">
-          <View className="max-h-[85%] rounded-t-3xl bg-white pt-4 dark:bg-neutral-900">
-            <View className="px-4 pb-2">
-              <Text className="text-lg font-bold text-neutral-900 dark:text-white">
+          <View className="max-h-[85%] rounded-t-3xl bg-surface-container-lowest pt-md">
+            <View className="px-md pb-sm">
+              <Text className="font-sans-medium text-headline-sm text-on-surface">
                 Select currency
               </Text>
-              <Text className="text-sm text-neutral-500">
+              <Text className="font-sans text-label-md text-on-surface-variant">
                 ISO code, flag, and country name
               </Text>
               <TextInput
                 value={query}
                 onChangeText={setQuery}
                 placeholder="Search code, country, or name…"
-                placeholderTextColor="#a3a3a3"
+                placeholderTextColor={uiColors.muted}
                 autoCapitalize="none"
-                className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-base dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+                className="mt-3 rounded-card border border-outline-variant/40 bg-surface-container-low px-md py-sm font-sans text-body-md text-on-surface"
               />
             </View>
 
@@ -127,25 +127,25 @@ export function CurrencyPicker({
               data={filtered}
               keyExtractor={(item) => `${item.code}-${item.countryCode}`}
               keyboardShouldPersistTaps="handled"
-              className="px-2"
+              className="px-sm"
               contentContainerStyle={{ paddingBottom: 32 }}
               renderItem={({ item }) => {
                 const isSelected = item.code === value;
                 return (
                   <Pressable
                     onPress={() => pick(item)}
-                    className={`mx-2 mb-1 flex-row items-center gap-3 rounded-xl px-3 py-3 ${
+                    className={`mx-sm mb-1 flex-row items-center gap-md rounded-card px-sm py-sm ${
                       isSelected
-                        ? 'bg-brand-50 dark:bg-brand-950'
-                        : 'active:bg-neutral-100 dark:active:bg-neutral-800'
+                        ? 'bg-secondary-container'
+                        : 'active:bg-surface-container-high'
                     }`}
                   >
                     <Text className="text-2xl">{item.flag}</Text>
                     <View className="flex-1">
-                      <Text className="font-semibold text-neutral-900 dark:text-white">
+                      <Text className="font-sans-semibold text-body-md text-on-surface">
                         {item.code} · {item.name}
                       </Text>
-                      <Text className="text-sm text-neutral-500">
+                      <Text className="font-sans text-label-md text-on-surface-variant">
                         {item.country} — ISO {item.countryCode}
                       </Text>
                     </View>
@@ -156,7 +156,9 @@ export function CurrencyPicker({
                 );
               }}
               ListEmptyComponent={
-                <Text className="py-8 text-center text-neutral-500">No currencies found</Text>
+                <Text className="py-8 text-center font-sans text-body-md text-on-surface-variant">
+                  No currencies found
+                </Text>
               }
             />
 
@@ -165,9 +167,9 @@ export function CurrencyPicker({
                 setOpen(false);
                 setQuery('');
               }}
-              className="mx-4 mb-8 mt-2 rounded-xl border border-neutral-200 py-3 dark:border-neutral-700"
+              className="mx-md mb-8 mt-sm rounded-card border border-outline-variant py-sm"
             >
-              <Text className="text-center font-semibold text-neutral-700 dark:text-neutral-300">
+              <Text className="text-center font-sans-semibold text-body-md text-on-surface-variant">
                 Close
               </Text>
             </Pressable>

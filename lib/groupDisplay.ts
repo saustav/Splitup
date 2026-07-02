@@ -1,6 +1,8 @@
 import type { ComponentProps } from 'react';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+import { colors } from '@/constants/theme';
+
 const GROUP_ICONS: ComponentProps<typeof MaterialIcons>['name'][] = [
   'terrain',
   'home',
@@ -14,14 +16,14 @@ const GROUP_ICONS: ComponentProps<typeof MaterialIcons>['name'][] = [
 
 const GROUP_EMOJIS = ['🏔️', '🏠', '🍜', '✈️', '🛒', '🎮', '☕', '🚗'];
 const GROUP_ICON_BACKGROUNDS = [
-  '#E1F5EE',
-  '#EEEDFE',
-  '#FAEEDA',
-  '#E1F5EE',
-  '#FAEEDA',
-  '#EEEDFE',
-  '#FAEEDA',
-  '#E1F5EE',
+  colors.brand.light,
+  colors.accent.purpleLight,
+  colors.amber.light,
+  colors.brand.light,
+  colors.amber.light,
+  colors.accent.purpleLight,
+  colors.amber.light,
+  colors.brand.light,
 ];
 
 function hashName(name: string): number {

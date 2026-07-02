@@ -22,7 +22,7 @@ export function ProfileToggleRow({
 }: ProfileToggleRowProps) {
   return (
     <View
-      className={`flex-row items-center justify-between p-md ${
+      className={`flex-row items-center justify-between px-md py-sm ${
         showDivider ? 'border-b border-outline-variant/30' : ''
       }`}
     >

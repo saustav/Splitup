@@ -37,13 +37,13 @@ const PRESETS: Record<
     },
   },
   tabBarUp: {
-    web: '0 -4px 12px rgba(0, 0, 0, 0.05)',
+    web: '0 -2px 8px rgba(0, 0, 0, 0.04)',
     native: {
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.05,
-      shadowRadius: 12,
-      elevation: 8,
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      elevation: 6,
     },
   },
 };

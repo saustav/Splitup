@@ -9,14 +9,16 @@ import { CurrencyPicker } from "@/components/CurrencyPicker";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { ProfileTextField } from "@/components/ProfileTextField";
 import { ProfileToggleRow } from "@/components/ProfileToggleRow";
-import { TopAppBar } from "@/components/TopAppBar";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { layout } from "@/constants/layout";
+import { uiColors } from "@/constants/theme";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { useAutosaveStatus } from "@/hooks/useAutosaveStatus";
 import {
-    getPushNotificationHelpMessage,
-    registerForPushNotifications,
+  canRegisterForPushNotifications,
+  getPushNotificationHelpMessage,
+  registerForPushNotifications,
 } from "@/lib/notifications";
-import { platformShadow } from "@/lib/platformShadow";
 import {
     DEFAULT_PROFILE_PREFERENCES,
     displayNameFromProfile,
@@ -28,10 +30,11 @@ import {
     type UserProfile,
 } from "@/lib/profile";
 import { useAuthStore } from "@/stores/authStore";
+import { useThemeStore } from "@/stores/themeStore";
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <Text className="px-1 font-sans-semibold text-headline-sm text-on-surface">
+    <Text className="px-1 font-sans-medium text-body-md text-on-surface">
       {children}
     </Text>
   );
@@ -41,6 +44,8 @@ export default function AccountScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
+  const themeMode = useThemeStore((s) => s.mode);
+  const toggleTheme = useThemeStore((s) => s.toggle);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [logoutVisible, setLogoutVisible] = useState(false);
@@ -191,18 +196,18 @@ export default function AccountScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar onNotificationsPress={handleEnableNotifications} />
+      <ScreenHeader variant="tab" title="Account" />
 
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 120,
-          maxWidth: 480,
+          paddingHorizontal: layout.screenPadding,
+          paddingTop: 4,
+          paddingBottom: layout.tabScrollBottom,
+          maxWidth: layout.contentMaxWidth,
           width: "100%",
           alignSelf: "center",
-          gap: 24,
+          gap: 16,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -217,11 +222,26 @@ export default function AccountScreen() {
         </View>
 
         <View className="gap-stack-gap">
+          <SectionTitle>Appearance</SectionTitle>
+          <View className="overflow-hidden rounded-card border border-outline-variant/40 bg-surface-container-low">
+            <ProfileToggleRow
+              icon={themeMode === "dark" ? "dark-mode" : "light-mode"}
+              title="Dark mode"
+              subtitle={
+                themeMode === "dark"
+                  ? "Switch to light appearance"
+                  : "Switch to dark appearance"
+              }
+              value={themeMode === "dark"}
+              onValueChange={() => void toggleTheme()}
+              showDivider={false}
+            />
+          </View>
+        </View>
+
+        <View className="gap-stack-gap">
           <SectionTitle>Personal Information</SectionTitle>
-          <View
-            className="gap-md rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-md"
-            style={platformShadow("card")}
-          >
+          <View className="gap-md rounded-card border border-outline-variant/40 bg-surface-container-low p-md">
             <ProfileTextField
               label="Full Name"
               value={fullName}
@@ -292,10 +312,7 @@ export default function AccountScreen() {
 
         <View className="gap-stack-gap">
           <SectionTitle>Notifications</SectionTitle>
-          <View
-            className="overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest"
-            style={platformShadow("card")}
-          >
+          <View className="overflow-hidden rounded-card border border-outline-variant/40 bg-surface-container-low">
             <ProfileToggleRow
               title="Expense Updates"
               subtitle="When someone adds or edits an expense"
@@ -346,10 +363,7 @@ export default function AccountScreen() {
 
         <View className="gap-stack-gap">
           <SectionTitle>Security & Privacy</SectionTitle>
-          <View
-            className="overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest"
-            style={platformShadow("card")}
-          >
+          <View className="overflow-hidden rounded-card border border-outline-variant/40 bg-surface-container-low">
             <ProfileToggleRow
               icon="visibility"
               title="Public Profile"
@@ -378,27 +392,58 @@ export default function AccountScreen() {
           </View>
         </View>
 
-        <View className="gap-stack-gap pb-md">
-          <Text className="px-1 font-sans-semibold text-headline-sm text-error">
-            Danger Zone
-          </Text>
-          <View className="gap-sm">
+        <View className="gap-stack-gap">
+          <SectionTitle>Account</SectionTitle>
+          <View className="overflow-hidden rounded-card border border-outline-variant/40 bg-surface-container-low">
+            {canRegisterForPushNotifications() ? (
+              <Pressable
+                onPress={handleEnableNotifications}
+                className="flex-row items-center justify-between border-b border-outline-variant/30 px-md py-sm active:bg-surface-container-high"
+              >
+                <View className="flex-row items-center gap-md">
+                  <MaterialIcons
+                    name="notifications-active"
+                    size={20}
+                    color={uiColors.iconOnLight}
+                  />
+                  <Text className="font-sans-medium text-body-md text-on-surface">
+                    Enable push notifications
+                  </Text>
+                </View>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={uiColors.muted}
+                />
+              </Pressable>
+            ) : null}
             <Pressable
               onPress={handleLogout}
-              className="flex-row items-center justify-center gap-sm rounded-xl border border-error/20 bg-surface-container-lowest py-md active:opacity-90"
-              style={platformShadow("card")}
+              className="flex-row items-center justify-between border-b border-outline-variant/30 px-md py-sm active:bg-surface-container-high"
             >
-              <MaterialIcons name="logout" size={22} color="#ba1a1a" />
-              <Text className="font-sans text-body-lg text-error">Logout</Text>
+              <View className="flex-row items-center gap-md">
+                <MaterialIcons name="logout" size={20} color={uiColors.error} />
+                <Text className="font-sans-medium text-body-md text-error">
+                  Log out
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={uiColors.muted} />
             </Pressable>
             <Pressable
               onPress={handleDeactivate}
-              className="flex-row items-center justify-center gap-sm rounded-xl bg-error/10 py-md active:opacity-90"
+              className="flex-row items-center justify-between px-md py-sm active:bg-surface-container-high"
             >
-              <MaterialIcons name="delete-forever" size={22} color="#ba1a1a" />
-              <Text className="font-sans text-body-lg text-error">
-                Deactivate Account
-              </Text>
+              <View className="flex-row items-center gap-md">
+                <MaterialIcons
+                  name="delete-forever"
+                  size={20}
+                  color={uiColors.error}
+                />
+                <Text className="font-sans-medium text-body-md text-error">
+                  Deactivate account
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={uiColors.muted} />
             </Pressable>
           </View>
         </View>

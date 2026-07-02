@@ -3,17 +3,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
   View,
 } from 'react-native';
 
-import { DashboardBalanceCard } from '@/components/DashboardBalanceCard';
-import { DashboardGroupCard } from '@/components/DashboardGroupCard';
-import { DashboardHeader } from '@/components/DashboardHeader';
+import { BalanceHero } from '@/components/BalanceHero';
 import { DashboardQuickActions } from '@/components/DashboardQuickActions';
+import { GroupCard } from '@/components/GroupCard';
+import { OutlineButton, PrimaryButton, EmptyState } from '@/components/ui/Buttons';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { SectionHeader } from '@/components/ui/SurfaceCard';
+import { layout } from '@/constants/layout';
 import { uiColors } from '@/constants/theme';
 import { useProfileDisplayCurrency } from '@/hooks/useProfileDisplayCurrency';
 import { BALANCE_ZERO_THRESHOLD } from '@/lib/balances';
@@ -40,16 +42,11 @@ export default function DashboardScreen() {
   const user = useAuthStore((s) => s.user);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [summary, setSummary] = useState<{
-    totalBalance: number;
-    totalYouOwe: number;
-    totalOwedToYou: number;
-    groupBalances: GroupBalanceSummary[];
-  }>({
+  const [summary, setSummary] = useState({
     totalBalance: 0,
     totalYouOwe: 0,
     totalOwedToYou: 0,
-    groupBalances: [],
+    groupBalances: [] as GroupBalanceSummary[],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -67,6 +64,7 @@ export default function DashboardScreen() {
   const subscribe = useGroupsStore((s) => s.subscribe);
   const unsubscribe = useGroupsStore((s) => s.unsubscribe);
   const notificationCount = usePendingActionsStore((s) => s.totalCount);
+  const countByGroupId = usePendingActionsStore((s) => s.countByGroupId);
   const openNotifications = usePendingActionsStore((s) => s.openSheet);
   const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
 
@@ -259,7 +257,8 @@ export default function DashboardScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <DashboardHeader
+      <ScreenHeader
+        variant="dashboard"
         displayName={displayName}
         avatarUrl={profile?.avatar_url}
         notificationCount={notificationCount}
@@ -280,9 +279,9 @@ export default function DashboardScreen() {
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
-            paddingHorizontal: 16,
+            paddingHorizontal: layout.screenPadding,
             paddingTop: 4,
-            paddingBottom: 32,
+            paddingBottom: layout.tabScrollBottom,
           }}
           refreshControl={
             <RefreshControl
@@ -292,7 +291,8 @@ export default function DashboardScreen() {
             />
           }
         >
-          <DashboardBalanceCard
+          <BalanceHero
+            variant="dashboard"
             netBalance={summary.totalBalance}
             totalYouOwe={summary.totalYouOwe}
             totalOwedToYou={summary.totalOwedToYou}
@@ -305,53 +305,36 @@ export default function DashboardScreen() {
             showConverted={showConverted}
           />
 
-          <View className="mt-lg">
-            <View className="mb-stack-gap flex-row items-center justify-between">
-              <Text className="font-sans-medium text-body-lg text-on-surface">
-                Active groups
-              </Text>
-              <Pressable onPress={() => router.push('/(tabs)/groups')}>
-                <Text className="font-sans-medium text-label-md text-brand-primary">
-                  View all
-                </Text>
-              </Pressable>
-            </View>
+          <View className="mt-md">
+            <SectionHeader
+              title="Active groups"
+              actionLabel="View all"
+              onActionPress={() => router.push('/(tabs)/groups')}
+            />
 
             {hasNoGroups ? (
-              <View className="items-center rounded-[14px] border border-dashed border-outline-variant bg-surface-container-low px-md py-12">
-                <Text className="font-sans-medium text-body-lg text-on-surface">
-                  No groups yet
-                </Text>
-                <Text className="mt-2 px-6 text-center font-sans text-body-md text-on-surface-variant">
-                  Create a group to start splitting expenses with friends.
-                </Text>
-                <View className="mt-4 flex-row flex-wrap items-center justify-center gap-sm">
-                  <Pressable
-                    onPress={openCreateGroupModal}
-                    className="rounded-full bg-primary px-md py-sm active:opacity-80"
-                  >
-                    <Text className="font-sans-semibold text-body-md text-on-primary">
-                      Create group
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => router.push('/invite/join')}
-                    className="rounded-full border border-outline-variant bg-background px-md py-sm active:bg-surface-container-low"
-                  >
-                    <Text className="font-sans-semibold text-body-md text-primary">
-                      Join with code
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
+              <EmptyState
+                title="No groups yet"
+                message="Create a group to start splitting expenses with friends."
+              >
+                <PrimaryButton
+                  label="Create group"
+                  onPress={openCreateGroupModal}
+                />
+                <OutlineButton
+                  label="Join with code"
+                  onPress={() => router.push('/invite/join')}
+                />
+              </EmptyState>
             ) : (
               <View>
                 {activeGroups.map(({ group, netBalance, lastActiveAt }) => (
-                  <DashboardGroupCard
+                  <GroupCard
                     key={group.id}
                     group={group}
                     netBalance={netBalance}
                     lastActiveAt={lastActiveAt}
+                    pendingActionCount={countByGroupId[group.id] ?? 0}
                     onPress={() => router.push(`/group/${group.id}`)}
                   />
                 ))}
@@ -359,7 +342,7 @@ export default function DashboardScreen() {
             )}
           </View>
 
-          <View className="mt-lg">
+          <View className="mt-md">
             <DashboardQuickActions
               onAddExpense={() => router.push('/expense/add')}
               onSettleUp={handleSettleUp}

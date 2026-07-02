@@ -4,35 +4,36 @@
 
 @layer base {
   :root {
-    --background: 241 239 232;
-    --surface: 241 239 232;
+    --background: 247 246 243;
+    --surface: 247 246 243;
     --surface-container-lowest: 255 255 255;
-    --surface-container-low: 234 243 222;
-    --surface-container: 234 243 222;
-    --surface-container-high: 234 243 222;
+    --surface-container-low: 255 255 255;
+    --surface-container: 238 237 234;
+    --surface-container-high: 230 229 226;
     --on-surface: 44 44 42;
     --on-surface-variant: 84 83 77;
     --outline: 84 83 77;
-    --outline-variant: 241 239 232;
+    --outline-variant: 220 219 216;
     --primary-container: 234 243 222;
     --on-primary-container: 8 80 65;
-    --secondary-container: 234 243 222;
+    --secondary-container: 225 245 238;
     --on-secondary-container: 8 80 65;
     --error-container: 252 235 235;
     --on-error-container: 163 45 45;
   }
 
+  .dark,
   .dark:root {
-    --background: 28 28 26;
-    --surface: 28 28 26;
-    --surface-container-lowest: 44 44 42;
-    --surface-container-low: 36 52 46;
-    --surface-container: 36 52 46;
-    --surface-container-high: 52 60 56;
+    --background: 18 18 18;
+    --surface: 18 18 18;
+    --surface-container-lowest: 30 30 30;
+    --surface-container-low: 30 30 30;
+    --surface-container: 38 38 38;
+    --surface-container-high: 48 48 48;
     --on-surface: 241 239 232;
     --on-surface-variant: 168 166 158;
     --outline: 168 166 158;
-    --outline-variant: 61 61 58;
+    --outline-variant: 55 55 55;
     --primary-container: 36 52 46;
     --on-primary-container: 234 243 222;
     --secondary-container: 36 52 46;

@@ -149,11 +149,12 @@ export function InviteFriendsModal({
           accessibilityRole="button"
           accessibilityLabel="Dismiss invite dialog"
         />
-        <View className="z-10 rounded-t-3xl bg-white px-6 pb-10 pt-6 dark:bg-neutral-900">
-          <Text className="text-xl font-bold text-neutral-900 dark:text-white">
+        <View className="z-10 rounded-t-3xl bg-surface-container-lowest px-lg pb-10 pt-md">
+          <View className="mb-md h-1 w-10 self-center rounded-full bg-outline-variant" />
+          <Text className="font-sans-medium text-headline-sm text-on-surface">
             Invite friends
           </Text>
-          <Text className="mt-1 text-sm text-neutral-500">
+          <Text className="mt-1 font-sans text-label-md text-on-surface-variant">
             Share a link or code. Expires in 7 days.
           </Text>
 
@@ -169,15 +170,15 @@ export function InviteFriendsModal({
               accessibilityLabel={
                 copiedField === 'code' ? 'Invite code copied' : 'Copy invite code'
               }
-              className={`mt-6 rounded-2xl border p-4 active:opacity-90 ${
+              className={`mt-6 rounded-card border p-md active:opacity-90 ${
                 copiedField === 'code'
                   ? 'border-primary bg-secondary-container'
-                  : 'border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800'
+                  : 'border-outline-variant/40 bg-surface-container-low'
               }`}
               style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
             >
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-neutral-500">Invite code</Text>
+                <Text className="font-sans text-label-md text-on-surface-variant">Invite code</Text>
                 <View className="flex-row items-center gap-xs">
                   <MaterialIcons
                     name={copiedField === 'code' ? 'check-circle' : 'content-copy'}
@@ -185,18 +186,18 @@ export function InviteFriendsModal({
                     color={copiedField === 'code' ? uiColors.iconOnLight : uiColors.muted}
                   />
                   <Text
-                    className={`text-xs font-semibold ${
-                      copiedField === 'code' ? 'text-primary' : 'text-neutral-500'
+                    className={`font-sans-semibold text-label-md ${
+                      copiedField === 'code' ? 'text-primary' : 'text-on-surface-variant'
                     }`}
                   >
                     {copiedField === 'code' ? 'Copied!' : 'Tap to copy'}
                   </Text>
                 </View>
               </View>
-              <Text className="mt-1 text-2xl font-bold tracking-widest text-brand-dark">
+              <Text className="mt-1 font-sans-bold text-2xl tracking-widest text-primary">
                 {code}
               </Text>
-              <Text className="mt-3 text-xs text-neutral-500" numberOfLines={2}>
+              <Text className="mt-3 font-sans text-label-md text-on-surface-variant" numberOfLines={2}>
                 {inviteUrl}
               </Text>
             </Pressable>
@@ -204,16 +205,16 @@ export function InviteFriendsModal({
             <Pressable
               onPress={() => void loadInvite()}
               disabled={isLoading}
-              className="mt-6 rounded-xl bg-brand-600 py-3 active:bg-brand-700 disabled:opacity-50"
+              className="mt-6 rounded-card bg-primary py-sm active:opacity-80 disabled:opacity-50"
             >
-              <Text className="text-center font-semibold text-white">
+              <Text className="text-center font-sans-semibold text-body-md text-on-primary">
                 Try again
               </Text>
             </Pressable>
           )}
 
           {error ? (
-            <Text className="mt-3 text-center text-sm text-red-600 dark:text-red-400">
+            <Text className="mt-3 text-center font-sans text-body-md text-error">
               {error}
             </Text>
           ) : null}
@@ -227,10 +228,10 @@ export function InviteFriendsModal({
                 accessibilityLabel={
                   copiedField === 'link' ? 'Invite link copied' : 'Copy invite link'
                 }
-                className={`flex-1 flex-row items-center justify-center gap-xs rounded-xl border py-md active:opacity-80 ${
+                className={`flex-1 flex-row items-center justify-center gap-xs rounded-card border py-md active:opacity-80 ${
                   copiedField === 'link'
                     ? 'border-primary bg-secondary-container'
-                    : 'border-neutral-200 dark:border-neutral-700'
+                    : 'border-outline-variant/40'
                 }`}
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
@@ -240,10 +241,10 @@ export function InviteFriendsModal({
                   color={copiedField === 'link' ? uiColors.iconOnLight : uiColors.muted}
                 />
                 <Text
-                  className={`text-center font-semibold ${
+                  className={`text-center font-sans-semibold text-body-md ${
                     copiedField === 'link'
                       ? 'text-primary'
-                      : 'text-neutral-700 dark:text-neutral-300'
+                      : 'text-on-surface'
                   }`}
                 >
                   {copiedField === 'link' ? 'Copied!' : 'Copy link'}
@@ -254,10 +255,10 @@ export function InviteFriendsModal({
                 disabled={isLoading}
                 accessibilityRole="button"
                 accessibilityLabel="Share invite"
-                className="flex-1 rounded-xl bg-brand-600 py-3 active:bg-brand-700 disabled:opacity-50"
+                className="flex-1 rounded-card bg-primary py-sm active:opacity-80 disabled:opacity-50"
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
-                <Text className="text-center font-semibold text-white">Share</Text>
+                <Text className="text-center font-sans-semibold text-body-md text-on-primary">Share</Text>
               </Pressable>
             </View>
           ) : null}

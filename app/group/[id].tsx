@@ -22,7 +22,7 @@ import {
   PendingSettlementsSection,
   useEnrichedPendingSettlements,
 } from "@/components/PendingSettlementsSection";
-import { TopAppBar } from "@/components/TopAppBar";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { SETTLE_UP_ENABLED } from "@/constants/app";
 import {
   canDeleteGroup,
@@ -271,7 +271,7 @@ export default function GroupDetailScreen() {
   if (pageLoading && !group) {
     return (
       <View className="flex-1 bg-background">
-        <TopAppBar title="Group" showBack />
+        <ScreenHeader variant="stack" title="Group" showBack />
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
@@ -282,9 +282,9 @@ export default function GroupDetailScreen() {
   if (pageError || !group) {
     return (
       <View className="flex-1 bg-background">
-        <TopAppBar title="Group" showBack />
+        <ScreenHeader variant="stack" title="Group" showBack />
         <View className="flex-1 items-center justify-center px-container-margin">
-          <MaterialIcons name="error-outline" size={40} color="#ba1a1a" />
+          <MaterialIcons name="error-outline" size={40} color={uiColors.error} />
           <Text className="mt-md text-center font-sans text-body-md text-error">
             {pageError ?? "Group not found"}
           </Text>
@@ -295,10 +295,10 @@ export default function GroupDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar
+      <ScreenHeader
+        variant="stack"
         title={group.name}
         showBack
-        showNotifications={groupPendingCount > 0}
         notificationCount={groupPendingCount}
         onNotificationsPress={openNotifications}
         onInvitePress={() => setInviteVisible(true)}

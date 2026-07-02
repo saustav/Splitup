@@ -12,7 +12,7 @@ import {
 
 import { AddExpenseForm } from '@/components/AddExpenseForm';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { uiColors } from '@/constants/theme';
 import { canEditExpense } from '@/lib/expenseForm';
 import { getErrorMessage } from '@/lib/errors';
@@ -167,7 +167,7 @@ export default function EditExpenseScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Edit expense" showBack />
+      <ScreenHeader variant="stack" title="Edit expense" showBack />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

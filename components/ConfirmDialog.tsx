@@ -24,37 +24,37 @@ export function ConfirmDialog({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <Pressable
-        className="flex-1 items-center justify-center bg-black/50 px-6"
+        className="flex-1 items-center justify-center bg-black/50 px-lg"
         onPress={onCancel}
       >
         <Pressable
           onPress={(e) => e.stopPropagation()}
-          className="w-full max-w-sm rounded-2xl bg-white p-6 dark:bg-neutral-900"
+          className="w-full max-w-sm rounded-hero bg-surface-container-lowest p-lg"
         >
-          <Text className="text-lg font-bold text-neutral-900 dark:text-white">
+          <Text className="font-sans-medium text-headline-sm text-on-surface">
             {title}
           </Text>
-          <Text className="mt-2 text-base text-neutral-600 dark:text-neutral-400">
+          <Text className="mt-2 font-sans text-body-md text-on-surface-variant">
             {message}
           </Text>
-          <View className="mt-6 flex-row gap-3">
+          <View className="mt-6 flex-row gap-sm">
             <Pressable
               onPress={onCancel}
               disabled={isLoading}
-              className="flex-1 rounded-xl border border-neutral-200 py-3 dark:border-neutral-700"
+              className="flex-1 rounded-card border border-outline-variant py-sm active:opacity-80"
             >
-              <Text className="text-center font-semibold text-neutral-700 dark:text-neutral-300">
+              <Text className="text-center font-sans-semibold text-body-md text-on-surface-variant">
                 {cancelLabel}
               </Text>
             </Pressable>
             <Pressable
               onPress={onConfirm}
               disabled={isLoading}
-              className={`flex-1 rounded-xl py-3 ${
-                destructive ? 'bg-red-600' : 'bg-brand-600'
-              } disabled:opacity-50`}
+              className={`flex-1 rounded-card py-sm active:opacity-80 disabled:opacity-50 ${
+                destructive ? 'bg-error' : 'bg-primary'
+              }`}
             >
-              <Text className="text-center font-semibold text-white">
+              <Text className="text-center font-sans-semibold text-body-md text-on-primary">
                 {confirmLabel}
               </Text>
             </Pressable>

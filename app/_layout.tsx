@@ -14,7 +14,10 @@ import { LogBox, Platform } from 'react-native';
 import 'react-native-reanimated';
 
 if (__DEV__ && Platform.OS === 'web') {
-  LogBox.ignoreLogs([/shadow\*.*style props are deprecated/i]);
+  LogBox.ignoreLogs([
+    /shadow\*.*style props are deprecated/i,
+    /\[expo-notifications\].*not yet fully supported on web/i,
+  ]);
 }
 
 import { LoadingScreen } from '@/components/LoadingScreen';

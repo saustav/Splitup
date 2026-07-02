@@ -1,16 +1,15 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Text, View } from 'react-native';
 
+import { BalanceHero } from '@/components/BalanceHero';
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { getCurrencyByCode } from '@/constants/currencies';
-import { groupIconForName, initialsFromLabel } from '@/lib/groupDisplay';
-import { formatMoneyCompact } from '@/lib/currency';
 import {
-  balanceTone,
-  yourBalanceStatusLabel,
-} from '@/lib/balanceDisplay';
+  groupEmojiForName,
+  groupIconBackgroundForName,
+  initialsFromLabel,
+} from '@/lib/groupDisplay';
+import { yourBalanceStatusLabel } from '@/lib/balanceDisplay';
 import { memberDisplayName } from '@/lib/members';
-import { platformShadow } from '@/lib/platformShadow';
 import type { Group, GroupMember } from '@/types/group';
 
 export function GroupDetailHeader({
@@ -24,81 +23,50 @@ export function GroupDetailHeader({
   yourBalance: number;
   expenseCount: number;
 }) {
-  const tone = balanceTone(yourBalance);
   const currencyMeta = getCurrencyByCode(group.currency);
   const statusLabel = yourBalanceStatusLabel(yourBalance);
 
   return (
-    <View
-      className="overflow-hidden rounded-xl border border-outline-variant/30 bg-surface-container-lowest"
-      style={platformShadow('card')}
-    >
-      <View className={`relative p-md ${tone.cardBg}`}>
-        <View
-          className={`absolute -right-6 -top-6 h-28 w-28 rounded-full opacity-10 ${tone.decorBg}`}
-        />
-        <View className="flex-row items-start gap-md">
+    <View className="overflow-hidden rounded-card border border-outline-variant/40 bg-surface-container-low">
+      <View className="p-md">
+        <View className="mb-md flex-row items-center gap-md">
           <View
-            className={`h-14 w-14 items-center justify-center rounded-full border-2 bg-surface-container-lowest ${
-              tone.owes
-                ? 'border-on-error-container/20'
-                : 'border-on-primary-container/20'
-            }`}
+            className="h-12 w-12 items-center justify-center rounded-xl"
+            style={{ backgroundColor: groupIconBackgroundForName(group.name) }}
           >
-            <MaterialIcons
-              name={groupIconForName(group.name)}
-              size={28}
-              color={tone.avatarIconColor}
-            />
+            <Text className="text-xl">{groupEmojiForName(group.name)}</Text>
           </View>
           <View className="min-w-0 flex-1">
-            <Text className={`font-sans-bold text-headline-md ${tone.onContainer}`}>
+            <Text className="font-sans-medium text-headline-sm text-on-surface">
               {group.name}
             </Text>
-            <Text className={`mt-xs font-sans text-body-md ${tone.onContainerMuted}`}>
+            <Text className="mt-0.5 font-sans text-label-md text-on-surface-variant">
               {members.length} member{members.length === 1 ? '' : 's'}
               {' · '}
               {currencyMeta?.flag ?? '🌐'} {group.currency}
-            </Text>
-            <Text className={`mt-xs font-sans text-label-md ${tone.onContainerSubtle}`}>
+              {' · '}
               {expenseCount} expense{expenseCount === 1 ? '' : 's'}
             </Text>
           </View>
         </View>
 
-        <View className="mt-md flex-row items-end justify-between">
-          <View>
-            <Text className={`font-sans text-label-md ${tone.onContainerMuted}`}>
-              Your balance
-            </Text>
-            <Text className={`font-sans-bold text-display-lg-mobile ${tone.amountText}`}>
-              {formatMoneyCompact(yourBalance, group.currency)}
-            </Text>
-            <ConvertedAmountLabel
-              amount={yourBalance}
-              fromCurrency={group.currency}
-              className={`font-sans text-label-md ${tone.onContainerFaint}`}
-            />
-          </View>
-          <View
-            className={`flex-row items-center rounded-full px-sm py-xs ${tone.chipBg}`}
-          >
-            <MaterialIcons
-              name={tone.statusIcon}
-              size={16}
-              color={tone.iconColor}
-              style={{ marginRight: 4 }}
-            />
-            <Text className={`font-sans-semibold text-label-md ${tone.chipText}`}>
-              {statusLabel}
-            </Text>
-          </View>
-        </View>
+        <BalanceHero
+          variant="group"
+          label="Your balance"
+          netBalance={yourBalance}
+          currency={group.currency}
+          statusLabel={statusLabel}
+        />
+        <ConvertedAmountLabel
+          amount={yourBalance}
+          fromCurrency={group.currency}
+          className="mt-sm font-sans text-label-md text-on-surface-variant"
+        />
       </View>
 
       {members.length > 0 ? (
-        <View className="border-t border-outline-variant/20 px-md py-sm">
-          <Text className="mb-sm font-sans-semibold text-label-md text-on-surface-variant">
+        <View className="border-t border-outline-variant/40 px-md py-sm">
+          <Text className="mb-sm font-sans-medium text-label-md text-on-surface-variant">
             Members
           </Text>
           <View className="flex-row flex-wrap gap-sm">
@@ -109,8 +77,8 @@ export function GroupDetailHeader({
                   key={member.user_id}
                   className="flex-row items-center gap-xs rounded-full bg-surface-container-high px-sm py-xs"
                 >
-                  <View className="h-7 w-7 items-center justify-center rounded-full bg-tertiary-fixed">
-                    <Text className="font-sans-semibold text-label-md text-on-tertiary-fixed">
+                  <View className="h-7 w-7 items-center justify-center rounded-full bg-brand-mint">
+                    <Text className="font-sans-semibold text-label-md text-brand-deeper">
                       {initialsFromLabel(label)}
                     </Text>
                   </View>

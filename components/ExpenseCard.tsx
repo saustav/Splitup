@@ -68,7 +68,7 @@ export function ExpenseCard({
     <Pressable
       onPress={openDetail}
       accessibilityLabel={`View expense ${expense.description}`}
-      className="mb-xs flex-row items-center gap-sm rounded-lg border border-outline-variant/40 bg-surface-container-lowest px-sm py-sm active:opacity-90"
+      className="mb-xs flex-row items-center gap-sm rounded-card border border-outline-variant/40 bg-surface-container-low px-sm py-sm active:opacity-90"
     >
       <View className="h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high">
         <MaterialIcons name={category.icon} size={18} color={uiColors.iconOnLight} />

@@ -12,7 +12,9 @@ import {
 
 import { ActivityCard } from '@/components/ActivityCard';
 import { ActivityFilters } from '@/components/ActivityFilters';
-import { TopAppBar } from '@/components/TopAppBar';
+import { EmptyState } from '@/components/ui/Buttons';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { layout } from '@/constants/layout';
 import { uiColors } from '@/constants/theme';
 import {
   activityFilterCounts,
@@ -182,7 +184,7 @@ export default function ActivityScreen() {
             onChangeText={setSearchQuery}
             placeholder="Search activity…"
             placeholderTextColor={uiColors.muted}
-            className="rounded-full border border-outline-variant bg-surface py-sm pl-10 pr-md font-sans text-body-md text-on-surface"
+            className="rounded-card border border-outline-variant/40 bg-surface-container-low py-sm pl-10 pr-md font-sans text-body-md text-on-surface"
           />
         </View>
 
@@ -222,9 +224,9 @@ export default function ActivityScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar
-        title="Activity Feed"
-        showNotifications
+      <ScreenHeader
+        variant="tab"
+        title="Activity"
         notificationCount={notificationCount}
         onNotificationsPress={openNotifications}
       />
@@ -242,10 +244,10 @@ export default function ActivityScreen() {
         ListFooterComponent={listFooter}
         stickySectionHeadersEnabled={false}
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 120,
-          maxWidth: 900,
+          paddingHorizontal: layout.screenPadding,
+          paddingTop: 8,
+          paddingBottom: layout.tabScrollBottom,
+          maxWidth: layout.contentMaxWidth,
           width: '100%',
           alignSelf: 'center',
           flexGrow: 1,
@@ -280,15 +282,10 @@ export default function ActivityScreen() {
               </Text>
             </View>
           ) : (
-            <View className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-lg">
-              <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
-                No activity yet
-              </Text>
-              <Text className="mt-sm text-center font-sans text-body-md text-on-surface-variant">
-                Add an expense, share an invite, or settle up in a group to see
-                updates here. Pull down to refresh.
-              </Text>
-            </View>
+            <EmptyState
+              title="No activity yet"
+              message="Add an expense, share an invite, or settle up in a group to see updates here. Pull down to refresh."
+            />
           )
         }
       />

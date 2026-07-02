@@ -24,7 +24,7 @@ const CONFIG: Record<
     label: 'Continue with Google',
     icon: 'google',
     containerClass:
-      'border border-outline-variant/60 bg-surface-container-lowest active:bg-brand-light/40',
+      'border border-outline-variant/40 bg-surface-container-low active:opacity-90',
     iconWrapClass: 'bg-surface-container-lowest border border-outline-variant/40',
     labelClass: 'text-on-surface',
     iconColor: '#4285F4',
@@ -61,7 +61,7 @@ export function OAuthButton({
       disabled={isBusy}
       accessibilityRole="button"
       accessibilityState={{ disabled: isBusy, busy: loading }}
-      className={`relative min-h-[44px] justify-center rounded-lg px-md py-sm ${config.containerClass} ${
+      className={`relative min-h-[44px] justify-center rounded-card px-md py-sm ${config.containerClass} ${
         isBusy ? 'opacity-60' : ''
       }`}
       style={platformShadow('card')}

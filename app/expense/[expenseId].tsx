@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { ExpenseDetailView } from '@/components/ExpenseDetailView';
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { uiColors } from '@/constants/theme';
 import { canEditExpense } from '@/lib/expenseForm';
 import { getErrorMessage } from '@/lib/errors';
@@ -97,7 +97,7 @@ export default function ExpenseDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Expense details" showBack />
+      <ScreenHeader variant="stack" title="Expense details" showBack />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">

@@ -1,26 +1,21 @@
 import { Text, View } from 'react-native';
 
-import { TopAppBar } from '@/components/TopAppBar';
-import { usePendingActionsStore } from '@/stores/pendingActionsStore';
+import { EmptyState } from '@/components/ui/Buttons';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { layout } from '@/constants/layout';
 
 export default function BalancesScreen() {
-  const notificationCount = usePendingActionsStore((s) => s.totalCount);
-  const openNotifications = usePendingActionsStore((s) => s.openSheet);
-
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar
-        showNotifications
-        notificationCount={notificationCount}
-        onNotificationsPress={openNotifications}
-      />
-      <View className="flex-1 items-center justify-center px-container-margin">
-        <Text className="font-sans-semibold text-headline-sm text-on-surface">
-          Balances
-        </Text>
-        <Text className="mt-2 text-center font-sans text-body-md text-on-surface-variant">
-          A detailed breakdown of who owes whom across all groups is coming soon.
-        </Text>
+      <ScreenHeader variant="tab" title="Balances" />
+      <View
+        className="flex-1 justify-center px-container-margin"
+        style={{ paddingBottom: layout.tabScrollBottom }}
+      >
+        <EmptyState
+          title="Balances"
+          message="A detailed breakdown of who owes whom across all groups is coming soon."
+        />
       </View>
     </View>
   );

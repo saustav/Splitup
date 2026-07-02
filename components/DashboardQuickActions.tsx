@@ -1,6 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pressable, Text, View } from 'react-native';
 
+import { colors } from '@/constants/theme';
+
 type DashboardQuickActionsProps = {
   onAddExpense: () => void;
   onSettleUp: () => void;
@@ -24,7 +26,7 @@ function QuickActionButton({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-1 flex-row items-center gap-sm rounded-[14px] border border-outline-variant/40 bg-surface-container-low p-[14px] active:opacity-90"
+      className="flex-1 flex-row items-center gap-sm rounded-card border border-outline-variant/40 bg-surface-container-low p-sm active:opacity-90"
     >
       <View
         className="h-9 w-9 items-center justify-center rounded-[10px]"
@@ -50,22 +52,22 @@ export function DashboardQuickActions({
 }: DashboardQuickActionsProps) {
   return (
     <View>
-      <Text className="mb-stack-gap font-sans-medium text-body-lg text-on-surface">
+      <Text className="mb-sm font-sans-medium text-body-md text-on-surface">
         Quick actions
       </Text>
       <View className="flex-row gap-[10px]">
         <QuickActionButton
           icon="add"
-          iconBg="#E1F5EE"
-          iconColor="#0F6E56"
+          iconBg={colors.brand.light}
+          iconColor={colors.brand.dark}
           title="Add expense"
           subtitle="Split a new bill"
           onPress={onAddExpense}
         />
         <QuickActionButton
           icon="payments"
-          iconBg="#EEEDFE"
-          iconColor="#534AB7"
+          iconBg={colors.accent.purpleLight}
+          iconColor={colors.accent.purple}
           title="Settle up"
           subtitle="Pay what you owe"
           onPress={onSettleUp}

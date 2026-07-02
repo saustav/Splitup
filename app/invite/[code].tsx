@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { uiColors } from '@/constants/theme';
 import { getErrorMessage } from '@/lib/errors';
 import { acceptGroupInvite, normalizeInviteCode } from '@/lib/invites';
 import { paramString } from '@/lib/routeParams';
@@ -50,10 +51,10 @@ export default function AcceptInviteScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Join group" showBack />
+      <ScreenHeader variant="stack" title="Join group" showBack />
       <View className="flex-1 items-center justify-center px-container-margin">
         <View className="mb-lg h-16 w-16 items-center justify-center rounded-full bg-primary-container">
-          <MaterialIcons name="group-add" size={32} color="#00422b" />
+          <MaterialIcons name="group-add" size={32} color={uiColors.iconOnLight} />
         </View>
         <Text className="text-center font-sans-semibold text-headline-sm text-on-surface">
           You&apos;re invited

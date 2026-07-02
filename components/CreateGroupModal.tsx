@@ -10,6 +10,7 @@ import {
 
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { DEFAULT_CURRENCY_CODE } from '@/constants/currencies';
+import { uiColors } from '@/constants/theme';
 
 export function CreateGroupModal({
   visible,
@@ -47,17 +48,18 @@ export function CreateGroupModal({
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View className="flex-1 justify-end bg-black/40">
-        <View className="rounded-t-3xl bg-white px-6 pb-10 pt-6 dark:bg-neutral-900">
-          <Text className="text-xl font-bold text-neutral-900 dark:text-white">
+        <View className="rounded-t-3xl bg-surface-container-lowest px-lg pb-10 pt-md">
+          <View className="mb-md h-1 w-10 self-center rounded-full bg-outline-variant" />
+          <Text className="font-sans-medium text-headline-sm text-on-surface">
             New group
           </Text>
-          <Text className="mt-1 text-sm text-neutral-500">
+          <Text className="mt-1 font-sans text-label-md text-on-surface-variant">
             e.g. Roommates, Trip to Pokhara, Office lunch
           </Text>
 
           {error ? (
-            <View className="mt-4 rounded-lg bg-red-50 p-3 dark:bg-red-950">
-              <Text className="text-center text-sm text-red-700 dark:text-red-300">
+            <View className="mt-4 rounded-card bg-error-container p-md">
+              <Text className="text-center font-sans text-body-md text-on-error-container">
                 {error}
               </Text>
             </View>
@@ -67,11 +69,11 @@ export function CreateGroupModal({
             value={name}
             onChangeText={setName}
             placeholder="Group name"
-            placeholderTextColor="#a3a3a3"
+            placeholderTextColor={uiColors.muted}
             autoFocus
             maxLength={80}
             editable={!isCreating}
-            className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-base text-neutral-900 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            className="mt-4 rounded-card border border-outline-variant/40 bg-surface-container-low px-md py-sm font-sans text-body-md text-on-surface"
             onSubmitEditing={handleSubmit}
           />
 
@@ -83,25 +85,27 @@ export function CreateGroupModal({
             />
           </View>
 
-          <View className="mt-6 flex-row gap-3">
+          <View className="mt-6 flex-row gap-sm">
             <Pressable
               onPress={handleClose}
               disabled={isCreating}
-              className="flex-1 rounded-xl border border-neutral-200 py-3 dark:border-neutral-700"
+              className="flex-1 rounded-card border border-outline-variant py-sm active:opacity-80"
             >
-              <Text className="text-center font-semibold text-neutral-700 dark:text-neutral-300">
+              <Text className="text-center font-sans-semibold text-body-md text-on-surface-variant">
                 Cancel
               </Text>
             </Pressable>
             <Pressable
               onPress={handleSubmit}
               disabled={isCreating || !name.trim()}
-              className="flex-1 flex-row items-center justify-center rounded-xl bg-brand-600 py-3 active:bg-brand-700 disabled:opacity-50"
+              className="flex-1 flex-row items-center justify-center rounded-card bg-primary py-sm active:opacity-80 disabled:opacity-50"
             >
               {isCreating ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="font-semibold text-white">Create</Text>
+                <Text className="font-sans-semibold text-body-md text-on-primary">
+                  Create
+                </Text>
               )}
             </Pressable>
           </View>

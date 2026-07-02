@@ -87,7 +87,7 @@ export default function LoginScreen() {
         >
           <View className="w-[72px] items-center gap-md">
             <View
-              className="h-[72px] w-[72px] items-center justify-center rounded-2xl border border-outline-variant/20 bg-white"
+              className="h-[72px] w-[72px] items-center justify-center rounded-hero border border-outline-variant/40 bg-surface-container-lowest"
               style={platformShadow("card")}
             >
               <MaterialIcons
@@ -126,7 +126,7 @@ export default function LoginScreen() {
 
             {error ? (
               <View
-                className="mt-lg w-full max-w-[280px] flex-row items-start gap-sm rounded-xl bg-error-container px-md py-md"
+                className="mt-lg w-full max-w-[280px] flex-row items-start gap-sm rounded-card bg-error-container px-md py-md"
                 accessibilityRole="alert"
               >
                 <MaterialIcons
@@ -141,8 +141,8 @@ export default function LoginScreen() {
             ) : null}
 
             {!isSupabaseConfigured ? (
-              <View className="mt-lg w-full max-w-[280px] rounded-xl bg-amber-50 px-md py-md dark:bg-amber-950/40">
-                <Text className="text-center font-sans text-label-md text-amber-800 dark:text-amber-200">
+              <View className="mt-lg w-full max-w-[280px] rounded-card bg-amber-light px-md py-md dark:bg-amber-default/20">
+                <Text className="text-center font-sans text-label-md text-amber-default dark:text-amber-light">
                   Add Supabase keys to .env to enable sign-in
                 </Text>
               </View>

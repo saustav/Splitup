@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { uiColors } from '@/constants/theme';
 import { readClipboardText } from '@/lib/clipboardShare';
 import { getErrorMessage } from '@/lib/errors';
@@ -75,7 +75,7 @@ export default function JoinWithCodeScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Join group" showBack />
+      <ScreenHeader variant="stack" title="Join group" showBack />
 
       <KeyboardAvoidingView
         className="flex-1"

@@ -17,7 +17,7 @@ import {
   PendingSettlementsSection,
   useEnrichedPendingSettlements,
 } from '@/components/PendingSettlementsSection';
-import { TopAppBar } from '@/components/TopAppBar';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { balanceTone } from '@/lib/balanceDisplay';
 import { settlementAmountForDebt } from '@/lib/balances';
 import { formatMoney } from '@/lib/currency';
@@ -110,7 +110,7 @@ export default function SettleUpScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar title="Settle up" showBack />
+      <ScreenHeader variant="stack" title="Settle up" showBack />
 
       <ScrollView
         className="flex-1"

@@ -6,21 +6,33 @@ import { Platform } from 'react-native';
 export const pushNotificationsUnsupportedInExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
+/** Placeholder values from app.json templates — not real VAPID keys. */
+const VAPID_PLACEHOLDERS = new Set(['YOUR_PUBLIC_KEY_HERE', 'your_public_key_here']);
+
 /** Web push needs `notification.vapidPublicKey` in app.json (Expo VAPID guide). */
 export function getWebVapidPublicKey(): string | undefined {
   const key = Constants.expoConfig?.notification?.vapidPublicKey;
-  return typeof key === 'string' && key.trim().length > 0 ? key.trim() : undefined;
+  if (typeof key !== 'string') return undefined;
+  const trimmed = key.trim();
+  if (!trimmed || VAPID_PLACEHOLDERS.has(trimmed)) return undefined;
+  return trimmed;
 }
 
 export function canRegisterForPushNotifications(): boolean {
   if (pushNotificationsUnsupportedInExpoGo) return false;
+  // expo-notifications registers push-token listeners at import time; on web that
+  // only logs a warning and has no effect. Native apps are the supported path.
+  if (Platform.OS === 'web') return false;
   if (!Device.isDevice) return false;
-  if (Platform.OS === 'web' && !getWebVapidPublicKey()) return false;
   return true;
 }
 
 async function loadNotifications() {
   if (pushNotificationsUnsupportedInExpoGo) {
+    return null;
+  }
+
+  if (Platform.OS === 'web') {
     return null;
   }
 
@@ -79,11 +91,11 @@ export async function registerForPushNotifications(): Promise<string | null> {
 }
 
 export function getPushNotificationHelpMessage(): string {
+  if (Platform.OS === 'web') {
+    return 'Push notifications are available in the iOS and Android apps. Web push is not enabled for this project yet.';
+  }
   if (pushNotificationsUnsupportedInExpoGo) {
     return 'Push notifications need a development build (expo-notifications does not work in Expo Go). Use the web app or run: npx expo run:android';
-  }
-  if (Platform.OS === 'web' && !getWebVapidPublicKey()) {
-    return 'Web push is not configured yet. Use the iOS or Android app for alerts, or add notification.vapidPublicKey to app.json (Expo VAPID guide).';
   }
   if (!Device.isDevice) {
     return 'Use a physical device and grant notification permission.';

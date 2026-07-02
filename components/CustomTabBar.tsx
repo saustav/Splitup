@@ -2,8 +2,10 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { uiColors } from '@/constants/theme';
+import { layout } from '@/constants/layout';
+import { colors, semanticSurfaces, uiColors } from '@/constants/theme';
 import { platformShadow } from '@/lib/platformShadow';
+import { useThemeStore } from '@/stores/themeStore';
 
 type TabConfig = {
   route: string;
@@ -51,85 +53,114 @@ export function CustomTabBar({
   onAddPress?: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const themeMode = useThemeStore((s) => s.mode);
+  const isDark = themeMode === 'dark';
+  const surfaces = isDark ? semanticSurfaces.dark : semanticSurfaces.light;
+  const activeAccent = isDark ? colors.brand.primary : colors.brand.dark;
 
   return (
     <View
       className="px-container-margin"
-      style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+      style={{
+        paddingBottom: Math.max(insets.bottom, 8),
+        backgroundColor: surfaces.background,
+      }}
     >
       <View
-        className="flex-row items-end justify-around rounded-[20px] border border-outline-variant/40 bg-surface-container-low px-1.5 py-1.5"
-        style={platformShadow('tabBarUp')}
+        className="w-full self-center"
+        style={{ maxWidth: layout.contentMaxWidth }}
       >
-        {TABS.map((tab) => {
-          if (tab.route === 'add') {
+        <View
+          className="flex-row items-center justify-around rounded-2xl border px-0.5 py-0.5"
+          style={{
+            ...platformShadow('tabBarUp'),
+            backgroundColor: surfaces.containerLow,
+            borderColor: surfaces.outlineVariant,
+          }}
+        >
+          {TABS.map((tab) => {
+            if (tab.route === 'add') {
+              return (
+                <Pressable
+                  key="add"
+                  onPress={onAddPress}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add expense or group"
+                  className="mx-0.5 -mt-2 h-10 w-10 items-center justify-center rounded-full bg-brand-dark active:opacity-85"
+                  style={platformShadow('fab')}
+                >
+                  <MaterialIcons name="add" size={22} color="#ffffff" />
+                </Pressable>
+              );
+            }
+
+            const routeIndex = state.routes.findIndex(
+              (route: TabRoute) => route.name === tab.route
+            );
+            if (routeIndex === -1) return null;
+
+            const isFocused = state.index === routeIndex;
+            const route = state.routes[routeIndex];
+            const { options } = descriptors[route.key];
+
+            function onPress() {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            }
+
+            const iconName =
+              isFocused && tab.filledIcon ? tab.filledIcon : tab.icon;
+
             return (
               <Pressable
-                key="add"
-                onPress={onAddPress}
+                key={tab.route}
+                onPress={onPress}
                 accessibilityRole="button"
-                accessibilityLabel="Add expense or group"
-                className="mx-1 -mt-3 h-11 w-11 items-center justify-center rounded-full bg-[#0F6E56] active:opacity-80"
-                style={platformShadow('tabBar')}
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                className="min-w-[48px] flex-1 items-center justify-center rounded-xl px-1 py-1.5 active:opacity-80"
+                style={
+                  isFocused
+                    ? { backgroundColor: surfaces.containerHigh }
+                    : undefined
+                }
               >
-                <MaterialIcons name="add" size={24} color="#ffffff" />
+                <MaterialIcons
+                  name={iconName}
+                  size={18}
+                  color={
+                    isFocused
+                      ? activeAccent
+                      : isDark
+                        ? surfaces.onSurfaceVariant
+                        : uiColors.muted
+                  }
+                />
+                {tab.label ? (
+                  <Text
+                    className={`mt-px font-sans text-[9px] leading-3 ${
+                      isFocused ? 'font-sans-medium' : ''
+                    }`}
+                    style={{
+                      color: isFocused
+                        ? activeAccent
+                        : surfaces.onSurfaceVariant,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {tab.label}
+                  </Text>
+                ) : null}
               </Pressable>
             );
-          }
-
-          const routeIndex = state.routes.findIndex(
-            (route: TabRoute) => route.name === tab.route
-          );
-          if (routeIndex === -1) return null;
-
-          const isFocused = state.index === routeIndex;
-          const route = state.routes[routeIndex];
-          const { options } = descriptors[route.key];
-
-          function onPress() {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          }
-
-          const iconName =
-            isFocused && tab.filledIcon ? tab.filledIcon : tab.icon;
-
-          return (
-            <Pressable
-              key={tab.route}
-              onPress={onPress}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              className={`min-w-[56px] flex-1 items-center justify-center rounded-[14px] px-2 py-2 active:opacity-80 ${
-                isFocused ? 'bg-surface-container-high' : ''
-              }`}
-            >
-              <MaterialIcons
-                name={iconName}
-                size={20}
-                color={isFocused ? '#0F6E56' : uiColors.muted}
-              />
-              {tab.label ? (
-                <Text
-                  className={`mt-0.5 font-sans text-[10px] ${
-                    isFocused
-                      ? 'font-sans-medium text-[#0F6E56]'
-                      : 'text-on-surface-variant'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              ) : null}
-            </Pressable>
-          );
-        })}
+          })}
+        </View>
       </View>
     </View>
   );
