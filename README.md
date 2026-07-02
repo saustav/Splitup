@@ -123,7 +123,7 @@ Pushes to `main` build `dist/` and upload it to Hostinger via FTP using `.github
 
 ### Hostinger
 
-Files are uploaded to `/home/u461920479/domains/mantradigital.com.np/public_html/splitup/`. Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
+Files are uploaded to `/domains/mantradigital.com.np/public_html/splitup/` (relative to your FTP home directory). Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
 
 ### Supabase (production)
 
