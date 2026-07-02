@@ -46,17 +46,17 @@ export function GroupCard({
             <MaterialIcons
               name={groupIconForName(group.name)}
               size={24}
-              color={tone?.groupIconColor ?? '#1D9E75'}
+              color={tone?.groupIconColor ?? '#0F6E56'}
             />
           </View>
           {pendingActionCount > 0 ? (
-            <View className="absolute -right-0.5 -top-0.5 min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-surface-container-lowest bg-error px-0.5">
+            <View className="absolute -right-xs -top-xs min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-surface-container-lowest bg-error">
               <MaterialIcons name="notifications" size={10} color="#ffffff" />
             </View>
           ) : null}
         </View>
         <View>
-          <Text className="font-sans-semibold text-body-lg text-on-surface">
+          <Text className="font-sans-semibold text-body-md text-on-surface">
             {group.name}
           </Text>
           <Text className="font-sans text-body-md text-on-surface-variant">
@@ -65,7 +65,7 @@ export function GroupCard({
             {getCurrencyByCode(group.currency)?.flag ?? ''} {group.currency}
           </Text>
           {pendingActionCount > 0 ? (
-            <Text className="mt-0.5 font-sans-semibold text-label-md text-error">
+            <Text className="mt-xs font-sans-semibold text-label-md text-error">
               {pendingActionCount === 1
                 ? 'Confirm payment'
                 : `${pendingActionCount} payments to confirm`}
@@ -90,7 +90,7 @@ export function GroupCard({
           </View>
           {!tone.settled ? (
             <Text
-              className={`font-sans-medium text-numeric-data ${tone.listAmountText}`}
+              className={`font-sans-semibold text-body-md ${tone.listAmountText}`}
             >
               {formatMoneyCompact(netBalance, group.currency)}
             </Text>

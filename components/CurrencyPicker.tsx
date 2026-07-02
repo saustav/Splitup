@@ -98,7 +98,7 @@ export function CurrencyPicker({
         <MaterialIcons
           name="expand-more"
           size={24}
-          color={isProfile ? '#6c7a71' : '#737373'}
+          color={isProfile ? '#54534D' : '#737373'}
         />
       </Pressable>
 

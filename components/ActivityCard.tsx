@@ -15,19 +15,19 @@ function iconConfig(type: ActivityItem['type']): {
       return {
         name: 'receipt-long',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#1D9E75',
+        iconColor: '#0F6E56',
       };
     case 'expense_updated':
       return {
         name: 'edit',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#1D9E75',
+        iconColor: '#0F6E56',
       };
     case 'expense_deleted':
       return {
         name: 'delete-outline',
         containerClass: 'bg-surface-variant',
-        iconColor: '#3c4a42',
+        iconColor: '#54534D',
       };
     case 'payment':
       return {
@@ -51,7 +51,7 @@ function iconConfig(type: ActivityItem['type']): {
       return {
         name: 'check-circle',
         containerClass: 'bg-surface-variant',
-        iconColor: '#3c4a42',
+        iconColor: '#54534D',
       };
     case 'settlement_pending':
       return {
@@ -202,7 +202,7 @@ export function ActivityCard({
         onPress={handlePress}
         className="self-center rounded p-xs active:bg-surface-container"
       >
-        <MaterialIcons name="chevron-right" size={20} color="#1D9E75" />
+        <MaterialIcons name="chevron-right" size={20} color="#0F6E56" />
       </Pressable>
     </Pressable>
   );

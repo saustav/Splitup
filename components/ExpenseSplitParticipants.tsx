@@ -49,7 +49,7 @@ function InitialsAvatar({
         accessibilityLabel={isYou ? `You, ${initials}` : `${firstName}, ${initials}`}
       >
         <Text
-          className={`font-sans-semibold text-[10px] ${
+          className={`font-sans-semibold text-label-md ${
             isYou ? 'text-on-primary-container' : text
           }`}
         >
@@ -57,7 +57,7 @@ function InitialsAvatar({
         </Text>
       </View>
       <Text
-        className="mt-0.5 max-w-[44px] text-center font-sans text-[9px] text-on-surface-variant"
+        className="mt-xs max-w-[44px] text-center font-sans text-caption text-on-surface-variant"
         numberOfLines={1}
       >
         {isYou ? 'You' : firstName}
@@ -129,7 +129,7 @@ export function ExpenseSplitParticipants({
             className="mb-3 h-8 w-8 items-center justify-center rounded-full border-2 border-surface-container-lowest bg-surface-container-high"
             style={{ marginLeft: -6, zIndex: 0 }}
           >
-            <Text className="font-sans-semibold text-[10px] text-on-surface-variant">
+            <Text className="font-sans-semibold text-label-md text-on-surface-variant">
               +{overflow}
             </Text>
           </View>

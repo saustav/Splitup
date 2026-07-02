@@ -170,7 +170,7 @@ export default function EditExpenseScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1D9E75" />
+          <ActivityIndicator size="large" color="#0F6E56" />
         </View>
       ) : !canEdit ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">

@@ -109,7 +109,7 @@ export function CustomTabBar({
             />
             {tab.label ? (
               <Text
-                className={`mt-1 font-sans-semibold text-label-md ${
+                className={`mt-xs font-sans-semibold text-label-md ${
                   isFocused
                     ? 'text-on-secondary-container'
                     : 'text-on-surface-variant'

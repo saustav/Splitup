@@ -116,9 +116,9 @@ export default function JoinWithCodeScreen() {
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
                 {isPasting ? (
-                  <ActivityIndicator size="small" color="#1D9E75" />
+                  <ActivityIndicator size="small" color="#0F6E56" />
                 ) : (
-                  <MaterialIcons name="content-paste" size={18} color="#1D9E75" />
+                  <MaterialIcons name="content-paste" size={18} color="#0F6E56" />
                 )}
                 <Text className="font-sans-semibold text-label-md text-primary">
                   Paste
@@ -129,7 +129,7 @@ export default function JoinWithCodeScreen() {
               <MaterialIcons
                 name="vpn-key"
                 size={20}
-                color="#6c7a71"
+                color="#54534D"
                 style={{ position: 'absolute', left: 12, top: 14, zIndex: 1 }}
               />
               <TextInput
@@ -139,7 +139,7 @@ export default function JoinWithCodeScreen() {
                   setError(null);
                 }}
                 placeholder="e.g. F4BBB812 or invite link"
-                placeholderTextColor="#6c7a71"
+                placeholderTextColor="#54534D"
                 autoCapitalize="characters"
                 autoCorrect={false}
                 editable={!isJoining}

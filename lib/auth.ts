@@ -40,6 +40,15 @@ snapshotOAuthCallbackUrl();
  */
 export function getAuthRedirectUri(): string {
   if (Platform.OS === 'web') {
+    // Optional override when the dev server origin differs from what Supabase expects.
+    const originOverride = process.env.EXPO_PUBLIC_AUTH_REDIRECT_ORIGIN?.replace(
+      /\/$/,
+      ''
+    );
+    if (originOverride) {
+      return `${originOverride}/${AUTH_CALLBACK_PATH}`;
+    }
+
     // Match the browser origin exactly — avoids localhost vs 127.0.0.1 / port mismatches
     // that cause Supabase to redirect without ?code=.
     if (typeof window !== 'undefined' && window.location?.origin) {

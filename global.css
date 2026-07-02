@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  .font-sans {
+    font-family: Inter_400Regular, Inter, sans-serif;
+    font-weight: 400;
+  }
+
+  .font-sans-medium {
+    font-family: Inter_500Medium, Inter, sans-serif;
+    font-weight: 500;
+  }
+
+  .font-sans-semibold {
+    font-family: Inter_600SemiBold, Inter, sans-serif;
+    font-weight: 600;
+  }
+
+  .font-sans-bold {
+    font-family: Inter_700Bold, Inter, sans-serif;
+    font-weight: 700;
+  }
+}

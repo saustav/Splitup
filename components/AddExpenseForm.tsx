@@ -311,7 +311,7 @@ export function AddExpenseForm({
               value={amountText}
               onChangeText={setAmountText}
               placeholder="0.00"
-              placeholderTextColor="#6c7a71"
+              placeholderTextColor="#54534D"
               keyboardType="decimal-pad"
               editable={!isSubmitting}
               className="min-h-[80px] rounded-lg border border-outline-variant bg-background py-md pl-20 pr-4 font-sans-bold text-display-lg-mobile text-on-surface"
@@ -328,14 +328,14 @@ export function AddExpenseForm({
               <MaterialIcons
                 name="description"
                 size={20}
-                color="#6c7a71"
+                color="#54534D"
                 style={{ position: 'absolute', left: 12, top: 14, zIndex: 1 }}
               />
               <TextInput
                 value={description}
                 onChangeText={setDescription}
                 placeholder="e.g. Dinner at lakeside"
-                placeholderTextColor="#6c7a71"
+                placeholderTextColor="#54534D"
                 editable={!isSubmitting}
                 className="rounded-lg border border-outline-variant bg-background py-sm pl-10 pr-3 font-sans text-body-lg text-on-surface"
               />
@@ -376,7 +376,7 @@ export function AddExpenseForm({
               <MaterialIcons
                 name="group"
                 size={20}
-                color="#6c7a71"
+                color="#54534D"
                 style={{ position: 'absolute', left: 12 }}
               />
               <Text
@@ -387,7 +387,7 @@ export function AddExpenseForm({
                 {selectedGroup?.name ?? 'Select group…'}
               </Text>
               {groups.length > 1 ? (
-                <MaterialIcons name="expand-more" size={22} color="#6c7a71" />
+                <MaterialIcons name="expand-more" size={22} color="#54534D" />
               ) : null}
             </Pressable>
           </View>
@@ -405,13 +405,13 @@ export function AddExpenseForm({
             <MaterialIcons
               name="payments"
               size={20}
-              color="#6c7a71"
+              color="#54534D"
               style={{ position: 'absolute', left: 12 }}
             />
             <Text className="flex-1 font-sans text-body-lg text-on-surface">
               {paidByLabel}
             </Text>
-            <MaterialIcons name="expand-more" size={22} color="#6c7a71" />
+            <MaterialIcons name="expand-more" size={22} color="#54534D" />
           </Pressable>
         </View>
 
@@ -426,7 +426,7 @@ export function AddExpenseForm({
                 : 'border-outline-variant bg-surface-container'
             }`}
           >
-            <MaterialIcons name="pie-chart" size={16} color="#1D9E75" />
+            <MaterialIcons name="pie-chart" size={16} color="#0F6E56" />
             <Text className="font-sans-semibold text-label-md text-on-surface">Equally</Text>
           </Pressable>
           <Pressable
@@ -438,7 +438,7 @@ export function AddExpenseForm({
                 : 'border-outline-variant bg-surface-container'
             }`}
           >
-            <MaterialIcons name="tune" size={16} color="#1D9E75" />
+            <MaterialIcons name="tune" size={16} color="#0F6E56" />
             <Text className="font-sans-semibold text-label-md text-on-surface">Custom</Text>
           </Pressable>
         </View>
@@ -524,7 +524,7 @@ export function AddExpenseForm({
                           }))
                         }
                         placeholder="0.00"
-                        placeholderTextColor="#6c7a71"
+                        placeholderTextColor="#54534D"
                         keyboardType="decimal-pad"
                         editable={!isSubmitting}
                         className="w-24 rounded-md bg-transparent px-sm py-xs text-right font-sans-medium text-numeric-data text-on-surface"
@@ -594,7 +594,7 @@ export function AddExpenseForm({
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting || !canSubmit}
-              className="flex-row items-center gap-xs rounded-lg bg-primary-container px-xl py-sm shadow-sm active:opacity-95 disabled:opacity-50"
+              className="flex-row items-center gap-xs rounded-lg bg-primary px-xl py-sm shadow-sm active:opacity-95 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#ffffff" />

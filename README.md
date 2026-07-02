@@ -63,11 +63,15 @@ constants/        # Theme colors and shared values
 2. Copy the project URL and anon key into `.env`.
 3. Run `supabase/schema.sql` in the Supabase SQL Editor.
 4. Enable **Google** and **Apple** under **Auth → Sign In / Providers**.
-5. Add redirect URLs under **Auth → URL Configuration**:
-   - `splitup://**` (iOS/Android dev build — wildcard covers all paths)
-   - `splitup://auth/callback` (optional exact match)
-   - `http://localhost:8081/auth/callback` (local web — use the port shown in the terminal)
-   - Your production web URL + `/auth/callback` after deploying
+5. Under **Auth → URL Configuration**:
+   - **Site URL:** your production web URL (e.g. `https://splitup.mantradigital.com.np`)
+   - **Redirect URLs** (add every URL below — if localhost is missing, OAuth falls back to Site URL and local sign-in opens the live site):
+     - `https://splitup.mantradigital.com.np/auth/callback`
+     - `http://localhost:8081/auth/callback` (match the port shown when you run `npx expo start`)
+     - `http://127.0.0.1:8081/auth/callback`
+     - `splitup://**` (iOS/Android)
+     - `splitup://auth/callback` (optional exact match)
+   - In dev on web, the login screen shows the exact callback URL to whitelist.
 6. For Google on iOS: in Supabase **Auth → Providers → Google**, enable **Skip nonce check** if sign-in fails after Google consent.
 
 Sign-in uses `app/(auth)/login.tsx`. Web OAuth completes on `app/auth/callback.tsx`. Signed-in users are routed to tabs via `Stack.Protected`.

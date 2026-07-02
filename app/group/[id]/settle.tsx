@@ -185,7 +185,7 @@ export default function SettleUpScreen() {
         {myDebts.length === 0 ? (
           <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
             <View className="mb-sm h-14 w-14 items-center justify-center rounded-full bg-surface-container">
-              <MaterialIcons name="check-circle" size={28} color="#1D9E75" />
+              <MaterialIcons name="check-circle" size={28} color="#0F6E56" />
             </View>
             <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
               All settled up

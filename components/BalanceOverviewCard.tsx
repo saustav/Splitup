@@ -44,7 +44,7 @@ export function BalanceOverviewCard({
         className={`absolute -bottom-4 -left-4 h-24 w-24 rounded-full opacity-10 ${tone.decorBg}`}
       />
 
-      <Text className={`font-sans text-body-md ${labelText}`}>
+      <Text className={`font-sans-medium text-label-md ${labelText}`}>
         Total Balance
         {useConverted ? ` (${displayCurrency})` : ''}
       </Text>

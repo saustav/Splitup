@@ -133,8 +133,8 @@ export default function ActivityScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#1D9E75"
-            colors={['#1D9E75']}
+            tintColor="#0F6E56"
+            colors={['#0F6E56']}
             title={isRefreshing ? 'Refreshing…' : undefined}
           />
         }
@@ -144,14 +144,14 @@ export default function ActivityScreen() {
           <MaterialIcons
             name="search"
             size={20}
-            color="#6c7a71"
+            color="#54534D"
             style={{ position: 'absolute', left: 14, top: 12, zIndex: 1 }}
           />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search activity…"
-            placeholderTextColor="#6c7a71"
+            placeholderTextColor="#54534D"
             className="rounded-full border border-outline-variant bg-surface py-sm pl-10 pr-md font-sans text-body-md text-on-surface"
           />
         </View>
@@ -166,7 +166,7 @@ export default function ActivityScreen() {
           <View className="flex-1 gap-stack-gap">
             {isLoading ? (
               <View className="items-center py-16">
-                <ActivityIndicator size="large" color="#1D9E75" />
+                <ActivityIndicator size="large" color="#0F6E56" />
               </View>
             ) : error ? (
               <View className="rounded-xl bg-error-container p-md">

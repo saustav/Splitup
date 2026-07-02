@@ -73,10 +73,10 @@ export function balanceTone(amount: number) {
       : owed
         ? 'text-primary/80'
         : 'text-on-surface-variant',
-    groupListStatusIconColor: owes ? colors.red.default : colors.brand.primary,
-    iconColor: owes ? colors.red.default : colors.brand.dark,
+    groupListStatusIconColor: owes ? colors.red.default : colors.brand.dark,
+    iconColor: owes ? colors.red.default : colors.brand.deeper,
     avatarIconColor: owes ? colors.red.default : colors.brand.deeper,
-    groupIconColor: owes ? colors.red.default : colors.brand.primary,
+    groupIconColor: owes ? colors.red.default : colors.brand.dark,
     spinnerColor: owes ? colors.red.default : colors.brand.deeper,
     statusIcon: (owed
       ? 'arrow-upward'

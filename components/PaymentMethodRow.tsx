@@ -46,7 +46,7 @@ export function PaymentMethodRow({
         className="rounded p-xs active:opacity-70"
         accessibilityLabel={`Remove ${method.name}`}
       >
-        <MaterialIcons name="delete-outline" size={22} color="#6c7a71" />
+        <MaterialIcons name="delete-outline" size={22} color="#54534D" />
       </Pressable>
     </View>
   );

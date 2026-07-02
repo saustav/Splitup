@@ -16,7 +16,7 @@ function MenuRow({
   disabled?: boolean;
   destructive?: boolean;
 }) {
-  const iconColor = disabled ? '#9ca89f' : destructive ? '#ba1a1a' : '#3c4a42';
+  const iconColor = disabled ? '#9ca89f' : destructive ? '#ba1a1a' : '#54534D';
   const textColor = disabled
     ? 'text-on-surface-variant/50'
     : destructive

@@ -35,7 +35,7 @@ function NotificationRow({
             {formatMoney(item.amount, item.currency)} in {item.groupName}
           </Text>
         </View>
-        <MaterialIcons name="chevron-right" size={22} color="#6c7a71" />
+        <MaterialIcons name="chevron-right" size={22} color="#54534D" />
       </Pressable>
     );
   }
@@ -60,7 +60,7 @@ function NotificationRow({
           {formatMoney(item.amount, item.currency)}) in {item.groupName}
         </Text>
       </View>
-      <MaterialIcons name="chevron-right" size={22} color="#6c7a71" />
+      <MaterialIcons name="chevron-right" size={22} color="#54534D" />
     </Pressable>
   );
 }
@@ -105,13 +105,13 @@ export function PendingActionsSheet() {
               accessibilityLabel="Close"
               className="rounded-full p-2 active:bg-surface-container-high"
             >
-              <MaterialIcons name="close" size={22} color="#3c4a42" />
+              <MaterialIcons name="close" size={22} color="#54534D" />
             </Pressable>
           </View>
 
           {items.length === 0 ? (
             <View className="items-center py-10">
-              <MaterialIcons name="notifications-none" size={40} color="#6c7a71" />
+              <MaterialIcons name="notifications-none" size={40} color="#54534D" />
               <Text className="mt-md font-sans-semibold text-body-lg text-on-surface">
                 All caught up
               </Text>

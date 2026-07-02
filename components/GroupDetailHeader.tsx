@@ -110,7 +110,7 @@ export function GroupDetailHeader({
                   className="flex-row items-center gap-xs rounded-full bg-surface-container-high px-sm py-xs"
                 >
                   <View className="h-7 w-7 items-center justify-center rounded-full bg-tertiary-fixed">
-                    <Text className="font-sans-semibold text-[10px] text-on-tertiary-fixed">
+                    <Text className="font-sans-semibold text-label-md text-on-tertiary-fixed">
                       {initialsFromLabel(label)}
                     </Text>
                   </View>

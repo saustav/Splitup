@@ -154,11 +154,11 @@ export default function AddExpenseScreen() {
 
       {!isSupabaseConfigured ? (
         <View className="flex-1 items-center justify-center px-container-margin">
-          <ActivityIndicator size="large" color="#1D9E75" />
+          <ActivityIndicator size="large" color="#0F6E56" />
         </View>
       ) : isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1D9E75" />
+          <ActivityIndicator size="large" color="#0F6E56" />
         </View>
       ) : groups.length === 0 ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">
@@ -167,7 +167,7 @@ export default function AddExpenseScreen() {
           </Text>
           <Pressable
             onPress={() => router.replace('/(tabs)')}
-            className="rounded-lg bg-primary-container px-lg py-sm active:opacity-90"
+            className="rounded-lg bg-primary px-lg py-sm active:opacity-90"
           >
             <Text className="font-sans-semibold text-label-md text-on-primary">
               Go to dashboard

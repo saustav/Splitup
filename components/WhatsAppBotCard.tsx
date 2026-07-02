@@ -147,7 +147,7 @@ export function WhatsAppBotCard({ phone, onPhoneChange }: WhatsAppBotCardProps) 
       </View>
 
       {isLoading ? (
-        <ActivityIndicator className="mt-md" color="#1D9E75" />
+        <ActivityIndicator className="mt-md" color="#0F6E56" />
       ) : (
         <View className="mt-md gap-sm">
           {status?.verified ? (
@@ -212,7 +212,7 @@ export function WhatsAppBotCard({ phone, onPhoneChange }: WhatsAppBotCardProps) 
                           {group.name}
                         </Text>
                         {isDefault ? (
-                          <MaterialIcons name="check-circle" size={20} color="#1D9E75" />
+                          <MaterialIcons name="check-circle" size={20} color="#0F6E56" />
                         ) : null}
                       </Pressable>
                     );
@@ -238,7 +238,7 @@ export function WhatsAppBotCard({ phone, onPhoneChange }: WhatsAppBotCardProps) 
             }
             className="flex-row items-center gap-xs py-xs"
           >
-            <MaterialIcons name="info-outline" size={18} color="#1D9E75" />
+            <MaterialIcons name="info-outline" size={18} color="#0F6E56" />
             <Text className="font-sans-semibold text-label-md text-primary">
               Message examples
             </Text>

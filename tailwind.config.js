@@ -10,7 +10,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: colors.brand,
+        brand: {
+          ...colors.brand,
+          600: colors.brand.dark,
+          700: colors.brand.deeper,
+        },
         red: colors.red,
         blue: colors.blue,
         amber: colors.amber,
@@ -30,16 +34,16 @@ module.exports = {
         'inverse-on-surface': colors.gray[50],
         outline: colors.gray[400],
         'outline-variant': colors.gray[50],
-        'surface-tint': colors.brand.primary,
-        primary: colors.brand.primary,
+        'surface-tint': colors.brand.dark,
+        primary: colors.brand.dark,
         'on-primary': '#ffffff',
         'primary-container': colors.brand.light,
         'on-primary-container': colors.brand.deeper,
-        'inverse-primary': colors.brand.primary,
-        secondary: colors.brand.dark,
+        'inverse-primary': colors.brand.dark,
+        secondary: colors.brand.deeper,
         'on-secondary': '#ffffff',
         'secondary-container': colors.brand.light,
-        'on-secondary-container': colors.brand.dark,
+        'on-secondary-container': colors.brand.deeper,
         tertiary: colors.blue.default,
         'on-tertiary': '#ffffff',
         'tertiary-container': colors.blue.light,
@@ -57,10 +61,10 @@ module.exports = {
         'on-tertiary-fixed': colors.blue.default,
       },
       fontFamily: {
-        sans: ['Inter_400Regular'],
-        'sans-medium': ['Inter_500Medium'],
-        'sans-semibold': ['Inter_600SemiBold'],
-        'sans-bold': ['Inter_700Bold'],
+        sans: ['Inter_400Regular', 'Inter', 'sans-serif', { fontWeight: '400' }],
+        'sans-medium': ['Inter_500Medium', 'Inter', 'sans-serif', { fontWeight: '500' }],
+        'sans-semibold': ['Inter_600SemiBold', 'Inter', 'sans-serif', { fontWeight: '600' }],
+        'sans-bold': ['Inter_700Bold', 'Inter', 'sans-serif', { fontWeight: '700' }],
       },
       fontSize: {
         display: [`${fontSize.display}px`, { lineHeight: `${fontSize.display + 8}px` }],
@@ -77,7 +81,7 @@ module.exports = {
         'headline-sm': [`${fontSize.h2 + 2}px`, { lineHeight: '28px' }],
         'body-lg': [`${fontSize.h3}px`, { lineHeight: '24px' }],
         'body-md': [`${fontSize.body}px`, { lineHeight: '20px' }],
-        'label-md': [`${fontSize.caption + 1}px`, { lineHeight: '16px' }],
+        'label-md': [`${fontSize.caption}px`, { lineHeight: '16px' }],
         'numeric-data': [`${fontSize.h2}px`, { lineHeight: '24px' }],
       },
       spacing: {

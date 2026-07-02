@@ -33,7 +33,7 @@ export function ExpenseCategoryPicker({
             <MaterialIcons
               name={cat.icon}
               size={16}
-              color={selected ? '#1D9E75' : '#6c7a71'}
+              color={selected ? '#0F6E56' : '#54534D'}
             />
             <Text
               className={`font-sans-semibold text-label-md ${

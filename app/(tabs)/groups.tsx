@@ -86,7 +86,7 @@ export default function GroupsScreen() {
 
       {isLoading && groups.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1D9E75" />
+          <ActivityIndicator size="large" color="#0F6E56" />
         </View>
       ) : (
         <FlatList

@@ -35,7 +35,7 @@ function ActionRow({
         <Text className="font-sans-semibold text-body-lg text-on-surface">{title}</Text>
         <Text className="font-sans text-body-md text-on-surface-variant">{subtitle}</Text>
       </View>
-      <MaterialIcons name="chevron-right" size={22} color="#6c7a71" />
+      <MaterialIcons name="chevron-right" size={22} color="#54534D" />
     </Pressable>
   );
 }

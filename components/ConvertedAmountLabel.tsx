@@ -40,8 +40,8 @@ export function ConvertedAmountLabel({
 
   if (isLoading) {
     return (
-      <View className="mt-0.5">
-        <ActivityIndicator size="small" color="#6c7a71" />
+      <View className="mt-xs">
+        <ActivityIndicator size="small" color="#54534D" />
       </View>
     );
   }

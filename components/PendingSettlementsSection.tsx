@@ -130,7 +130,7 @@ export function PendingSettlementsSection({
           style={platformShadow('card')}
         >
           <View className="mb-sm flex-row items-center gap-xs">
-            <MaterialIcons name="schedule" size={18} color="#6c7a71" />
+            <MaterialIcons name="schedule" size={18} color="#54534D" />
             <Text className="font-sans-semibold text-body-lg text-on-surface">
               Waiting for confirmation
             </Text>

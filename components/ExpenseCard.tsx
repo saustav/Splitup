@@ -67,7 +67,7 @@ export function ExpenseCard({
             />
           </View>
           {editable ? (
-            <MaterialIcons name="edit" size={18} color="#1D9E75" />
+            <MaterialIcons name="edit" size={18} color="#0F6E56" />
           ) : null}
         </View>
       </View>
@@ -88,7 +88,7 @@ export function ExpenseCard({
         />
       ) : null}
       <View className="mt-xs flex-row items-center gap-xs">
-        <MaterialIcons name="calendar-today" size={14} color="#6c7a71" />
+        <MaterialIcons name="calendar-today" size={14} color="#54534D" />
         <Text className="font-sans text-label-md text-on-surface-variant">
           {formatExpenseDate(expense.expense_date)}
         </Text>

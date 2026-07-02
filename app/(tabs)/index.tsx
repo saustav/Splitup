@@ -173,7 +173,7 @@ export default function DashboardScreen() {
         </View>
       ) : isLoading && hasNoGroups ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#1D9E75" />
+          <ActivityIndicator size="large" color="#0F6E56" />
         </View>
       ) : (
         <ScrollView
@@ -187,7 +187,7 @@ export default function DashboardScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#1D9E75"
+              tintColor="#0F6E56"
             />
           }
         >

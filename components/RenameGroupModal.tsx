@@ -73,7 +73,7 @@ export function RenameGroupModal({
             value={name}
             onChangeText={setName}
             placeholder="Group name"
-            placeholderTextColor="#6c7a71"
+            placeholderTextColor="#54534D"
             editable={!isSaving}
             autoFocus
             className="mt-md rounded-lg border border-outline-variant bg-background px-md py-sm font-sans text-body-lg text-on-surface"

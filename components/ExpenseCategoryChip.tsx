@@ -17,7 +17,7 @@ export function ExpenseCategoryChip({
 
   return (
     <View className="flex-row items-center gap-xs self-start rounded-full bg-surface-container-high px-sm py-0.5">
-      <MaterialIcons name={meta.icon} size={14} color="#1D9E75" />
+      <MaterialIcons name={meta.icon} size={14} color="#0F6E56" />
       <Text className="font-sans-semibold text-label-md text-on-surface-variant">
         {meta.label}
       </Text>

@@ -67,7 +67,7 @@ export function TopAppBar({
     >
       <View
         className={`min-h-16 flex-row items-center px-container-margin ${
-          title ? 'py-1.5' : 'py-0'
+          title ? 'py-sm' : 'py-0'
         }`}
       >
         <View style={{ width: SIDE_WIDTH }}>
@@ -76,10 +76,10 @@ export function TopAppBar({
               onPress={handleBack}
               accessibilityRole="button"
               accessibilityLabel="Go back"
-              className="flex-row items-center gap-0.5 rounded-lg py-1 pr-2 active:bg-surface-container-high"
+              className="flex-row items-center gap-xs rounded-lg py-sm pr-sm active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="arrow-back" size={22} color="#1D9E75" />
+              <MaterialIcons name="arrow-back" size={22} color="#0F6E56" />
               <Text className="font-sans-semibold text-label-md text-primary">
                 Back
               </Text>
@@ -92,7 +92,7 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="account-balance-wallet" size={24} color="#3c4a42" />
+              <MaterialIcons name="account-balance-wallet" size={24} color="#54534D" />
             </Pressable>
           )}
         </View>
@@ -101,7 +101,7 @@ export function TopAppBar({
           <AppLogo onPress={goHome} />
           {title ? (
             <Text
-              className="mt-0.5 max-w-full text-center font-sans-semibold text-label-md text-on-surface-variant"
+              className="mt-xs max-w-full text-center font-sans-semibold text-label-md text-on-surface-variant"
               numberOfLines={1}
             >
               {title}
@@ -128,11 +128,11 @@ export function TopAppBar({
               <MaterialIcons
                 name={notificationCount > 0 ? 'notifications' : 'notifications-none'}
                 size={24}
-                color={notificationCount > 0 ? '#1D9E75' : '#3c4a42'}
+                color={notificationCount > 0 ? '#0F6E56' : '#54534D'}
               />
               {notificationCount > 0 ? (
-                <View className="absolute -right-0.5 -top-0.5 min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-error px-1">
-                  <Text className="font-sans-semibold text-[10px] text-on-error">
+                <View className="absolute -right-xs -top-xs min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-error px-1">
+                  <Text className="font-sans-semibold text-label-md text-on-error">
                     {notificationCount > 9 ? '9+' : notificationCount}
                   </Text>
                 </View>
@@ -149,7 +149,7 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="person-add" size={24} color="#1D9E75" />
+              <MaterialIcons name="person-add" size={24} color="#0F6E56" />
             </Pressable>
           ) : null}
           {onMenuPress ? (
@@ -160,7 +160,7 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="more-vert" size={24} color="#3c4a42" />
+              <MaterialIcons name="more-vert" size={24} color="#54534D" />
             </Pressable>
           ) : null}
         </View>

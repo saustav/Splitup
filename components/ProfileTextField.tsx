@@ -29,7 +29,7 @@ export function ProfileTextField({
         onChangeText={onChangeText}
         onBlur={onBlur}
         placeholder={placeholder}
-        placeholderTextColor="#6c7a71"
+        placeholderTextColor="#54534D"
         keyboardType={keyboardType}
         editable={editable}
         autoCapitalize={autoCapitalize}

@@ -20,7 +20,7 @@ export function BalanceSummary({
     return (
       <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
         <View className="mb-sm h-12 w-12 items-center justify-center rounded-full bg-surface-container">
-          <MaterialIcons name="account-balance-wallet" size={26} color="#6c7a71" />
+          <MaterialIcons name="account-balance-wallet" size={26} color="#54534D" />
         </View>
         <Text className="text-center font-sans-semibold text-body-md text-on-surface">
           No balances yet

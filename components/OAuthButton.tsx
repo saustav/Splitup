@@ -1,22 +1,43 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import type { ComponentProps } from 'react';
-import { Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+
+import { uiColors } from '@/constants/theme';
+import { platformShadow } from '@/lib/platformShadow';
 
 type Provider = 'google' | 'apple';
+type BrandIcon = ComponentProps<typeof FontAwesome5>['name'];
 
 const CONFIG: Record<
   Provider,
-  { label: string; icon: ComponentProps<typeof FontAwesome>['name']; bg: string }
+  {
+    label: string;
+    icon: BrandIcon;
+    containerClass: string;
+    iconWrapClass: string;
+    labelClass: string;
+    iconColor: string;
+    spinnerColor: string;
+  }
 > = {
   google: {
     label: 'Continue with Google',
     icon: 'google',
-    bg: 'bg-white border border-neutral-300',
+    containerClass:
+      'border border-outline-variant/60 bg-surface-container-lowest active:bg-brand-light/40',
+    iconWrapClass: 'bg-surface-container-lowest border border-outline-variant/40',
+    labelClass: 'text-on-surface',
+    iconColor: '#4285F4',
+    spinnerColor: uiColors.iconOnLight,
   },
   apple: {
     label: 'Continue with Apple',
     icon: 'apple',
-    bg: 'bg-neutral-900',
+    containerClass: 'bg-brand-deeper active:opacity-90',
+    iconWrapClass: 'bg-white/15',
+    labelClass: 'text-on-primary',
+    iconColor: '#ffffff',
+    spinnerColor: '#ffffff',
   },
 };
 
@@ -24,30 +45,42 @@ export function OAuthButton({
   provider,
   onPress,
   disabled,
+  loading,
 }: {
   provider: Provider;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
 }) {
-  const { label, icon, bg } = CONFIG[provider];
-  const isApple = provider === 'apple';
+  const config = CONFIG[provider];
+  const isBusy = disabled || loading;
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
-      className={`flex-row items-center justify-center rounded-xl px-4 py-3.5 ${bg} ${disabled ? 'opacity-50' : 'active:opacity-80'}`}
+      disabled={isBusy}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isBusy, busy: loading }}
+      className={`relative min-h-[44px] justify-center rounded-lg px-md py-sm ${config.containerClass} ${
+        isBusy ? 'opacity-60' : ''
+      }`}
+      style={platformShadow('card')}
     >
-      <FontAwesome
-        name={icon}
-        size={20}
-        color={isApple ? '#fff' : '#4285F4'}
-        style={{ marginRight: 12 }}
-      />
+      <View className="absolute bottom-0 left-md top-0 justify-center">
+        <View
+          className={`h-8 w-8 items-center justify-center rounded-md ${config.iconWrapClass}`}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={config.spinnerColor} />
+          ) : (
+            <FontAwesome5 name={config.icon} brand size={16} color={config.iconColor} />
+          )}
+        </View>
+      </View>
       <Text
-        className={`text-base font-semibold ${isApple ? 'text-white' : 'text-neutral-900'}`}
+        className={`text-center font-sans-semibold text-label-md ${config.labelClass}`}
       >
-        {label}
+        {loading ? 'Signing in…' : config.label}
       </Text>
     </Pressable>
   );

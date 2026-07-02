@@ -10,14 +10,14 @@ export function AutosaveIndicator({ status }: { status: AutosaveStatus }) {
     <View className="flex-row items-center gap-xs">
       {status === 'saving' ? (
         <>
-          <ActivityIndicator size="small" color="#1D9E75" />
+          <ActivityIndicator size="small" color="#0F6E56" />
           <Text className="font-sans text-label-md text-on-surface-variant">
             Saving…
           </Text>
         </>
       ) : (
         <>
-          <MaterialIcons name="check-circle" size={16} color="#1D9E75" />
+          <MaterialIcons name="check-circle" size={16} color="#0F6E56" />
           <Text className="font-sans-semibold text-label-md text-primary">
             Saved
           </Text>
