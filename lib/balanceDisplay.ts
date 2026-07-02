@@ -1,4 +1,4 @@
-import { colors } from '@/constants/theme';
+import { colors, uiColors } from '@/constants/theme';
 import {
   BALANCE_ZERO_THRESHOLD,
   isEffectivelyZero,
@@ -68,16 +68,12 @@ export function balanceTone(amount: number) {
       : owed
         ? 'text-primary'
         : 'text-primary',
-    convertedHintText: owes
-      ? 'text-error/80'
-      : owed
-        ? 'text-primary/80'
-        : 'text-on-surface-variant',
-    groupListStatusIconColor: owes ? colors.red.default : colors.brand.dark,
-    iconColor: owes ? colors.red.default : colors.brand.deeper,
-    avatarIconColor: owes ? colors.red.default : colors.brand.deeper,
-    groupIconColor: owes ? colors.red.default : colors.brand.dark,
-    spinnerColor: owes ? colors.red.default : colors.brand.deeper,
+    convertedHintText: 'text-on-surface-variant',
+    groupListStatusIconColor: owes ? uiColors.error : uiColors.iconOnLight,
+    iconColor: owes ? uiColors.error : colors.brand.deeper,
+    avatarIconColor: owes ? uiColors.error : colors.brand.deeper,
+    groupIconColor: owes ? uiColors.error : uiColors.iconOnLight,
+    spinnerColor: owes ? uiColors.error : colors.brand.deeper,
     statusIcon: (owed
       ? 'arrow-upward'
       : owes
@@ -105,4 +101,11 @@ export function groupCardStatusLabel(amount: number): string {
   if (sign === 'owed') return 'You are owed';
   if (sign === 'owes') return 'You owe';
   return 'Settled';
+}
+
+export function dashboardGroupStatusLabel(amount: number): string {
+  const sign = balanceSign(amount);
+  if (sign === 'owed') return 'owed to you';
+  if (sign === 'owes') return 'you owe';
+  return 'all settled';
 }

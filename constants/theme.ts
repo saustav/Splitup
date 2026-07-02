@@ -65,6 +65,8 @@ export const duration = {
 /** Accessible UI colors for icons, spinners, placeholders (import in TSX). */
 export const uiColors = {
   iconOnLight: colors.brand.dark,
+  iconOnDark: colors.brand.light,
   muted: colors.gray[400],
   onSurface: colors.gray[900],
+  error: colors.red.default,
 } as const;

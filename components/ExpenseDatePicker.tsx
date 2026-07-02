@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
 import {
   addMonths,
   calendarMonthGrid,
@@ -68,7 +69,7 @@ function CalendarGrid({
           className="h-10 w-10 items-center justify-center rounded-full active:bg-surface-container"
           accessibilityLabel="Previous month"
         >
-          <MaterialIcons name="chevron-left" size={24} color="#0F6E56" />
+          <MaterialIcons name="chevron-left" size={24} color={uiColors.iconOnLight} />
         </Pressable>
         <Text className="font-sans-semibold text-headline-sm text-on-surface">
           {monthLabel}
@@ -78,7 +79,7 @@ function CalendarGrid({
           className="h-10 w-10 items-center justify-center rounded-full active:bg-surface-container"
           accessibilityLabel="Next month"
         >
-          <MaterialIcons name="chevron-right" size={24} color="#0F6E56" />
+          <MaterialIcons name="chevron-right" size={24} color={uiColors.iconOnLight} />
         </Pressable>
       </View>
 
@@ -180,13 +181,13 @@ export function ExpenseDatePicker({
         <MaterialIcons
           name="calendar-today"
           size={20}
-          color="#54534D"
+          color={uiColors.muted}
           style={{ position: 'absolute', left: 12 }}
         />
         <Text className="flex-1 font-sans text-body-lg text-on-surface">
           {label}
         </Text>
-        <MaterialIcons name="expand-more" size={22} color="#54534D" />
+        <MaterialIcons name="expand-more" size={22} color={uiColors.muted} />
       </Pressable>
 
       {Platform.OS === 'android' && open ? (

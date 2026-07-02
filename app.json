@@ -28,7 +28,7 @@
     },
     "notification": {
       "icon": "./assets/images/icon.png",
-      "color": "#16a34a",
+      "color": "#0F6E56",
       "vapidPublicKey": "YOUR_PUBLIC_KEY_HERE"
     },
     "plugins": [
@@ -45,7 +45,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#16a34a"
+          "color": "#0F6E56"
         }
       ],
       "@react-native-community/datetimepicker"

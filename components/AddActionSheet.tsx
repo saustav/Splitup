@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Modal, Pressable, Text, View } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
 import { platformShadow } from '@/lib/platformShadow';
 
 type AddActionSheetProps = {
@@ -35,7 +36,7 @@ function ActionRow({
         <Text className="font-sans-semibold text-body-lg text-on-surface">{title}</Text>
         <Text className="font-sans text-body-md text-on-surface-variant">{subtitle}</Text>
       </View>
-      <MaterialIcons name="chevron-right" size={22} color="#54534D" />
+      <MaterialIcons name="chevron-right" size={22} color={uiColors.muted} />
     </Pressable>
   );
 }

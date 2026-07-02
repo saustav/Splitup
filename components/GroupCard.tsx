@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { getCurrencyByCode } from '@/constants/currencies';
+import { uiColors } from '@/constants/theme';
 import {
   balanceTone,
   groupCardStatusLabel,
@@ -46,7 +47,7 @@ export function GroupCard({
             <MaterialIcons
               name={groupIconForName(group.name)}
               size={24}
-              color={tone?.groupIconColor ?? '#0F6E56'}
+              color={tone?.groupIconColor ?? uiColors.iconOnLight}
             />
           </View>
           {pendingActionCount > 0 ? (

@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,29 +10,56 @@ import {
   View,
 } from 'react-native';
 
-import { BalanceOverviewCard } from '@/components/BalanceOverviewCard';
-import { GroupCard } from '@/components/GroupCard';
-import { TopAppBar } from '@/components/TopAppBar';
+import { DashboardBalanceCard } from '@/components/DashboardBalanceCard';
+import { DashboardGroupCard } from '@/components/DashboardGroupCard';
+import { DashboardHeader } from '@/components/DashboardHeader';
+import { DashboardQuickActions } from '@/components/DashboardQuickActions';
+import { uiColors } from '@/constants/theme';
 import { useProfileDisplayCurrency } from '@/hooks/useProfileDisplayCurrency';
+import { BALANCE_ZERO_THRESHOLD } from '@/lib/balances';
 import { fetchDashboardSummary, type GroupBalanceSummary } from '@/lib/dashboard';
 import { convertCurrencyBatch } from '@/lib/currency';
+import {
+  displayNameFromProfile,
+  fetchUserProfile,
+  type UserProfile,
+} from '@/lib/profile';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { useGroupsStore } from '@/stores/groupsStore';
 import { usePendingActionsStore } from '@/stores/pendingActionsStore';
 
+type ConvertedSummary = {
+  net: number | null;
+  youOwe: number | null;
+  owedToYou: number | null;
+};
+
 export default function DashboardScreen() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
 
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [summary, setSummary] = useState<{
     totalBalance: number;
+    totalYouOwe: number;
+    totalOwedToYou: number;
     groupBalances: GroupBalanceSummary[];
-  }>({ totalBalance: 0, groupBalances: [] });
+  }>({
+    totalBalance: 0,
+    totalYouOwe: 0,
+    totalOwedToYou: 0,
+    groupBalances: [],
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [convertedTotal, setConvertedTotal] = useState<number | null>(null);
-  const [isConvertingTotal, setIsConvertingTotal] = useState(false);
+  const [convertedSummary, setConvertedSummary] = useState<ConvertedSummary>({
+    net: null,
+    youOwe: null,
+    owedToYou: null,
+  });
+  const [isConverting, setIsConverting] = useState(false);
+
   const { defaultCurrency, showConverted } = useProfileDisplayCurrency(user?.id);
   const openCreateGroupModal = useGroupsStore((s) => s.openCreateGroupModal);
   const storeGroups = useGroupsStore((s) => s.groups);
@@ -39,14 +67,22 @@ export default function DashboardScreen() {
   const subscribe = useGroupsStore((s) => s.subscribe);
   const unsubscribe = useGroupsStore((s) => s.unsubscribe);
   const notificationCount = usePendingActionsStore((s) => s.totalCount);
-  const countByGroupId = usePendingActionsStore((s) => s.countByGroupId);
   const openNotifications = usePendingActionsStore((s) => s.openSheet);
   const refreshPendingActions = usePendingActionsStore((s) => s.refresh);
+
+  const displayName = displayNameFromProfile(profile, user?.email ?? undefined);
+  const primaryCurrency =
+    summary.groupBalances[0]?.group.currency ?? defaultCurrency;
 
   const loadDashboard = useCallback(
     async (silent = false) => {
       if (!user?.id) {
-        setSummary({ totalBalance: 0, groupBalances: [] });
+        setSummary({
+          totalBalance: 0,
+          totalYouOwe: 0,
+          totalOwedToYou: 0,
+          groupBalances: [],
+        });
         setIsLoading(false);
         return;
       }
@@ -65,53 +101,98 @@ export default function DashboardScreen() {
   );
 
   useEffect(() => {
+    if (!user?.id) {
+      setProfile(null);
+      return;
+    }
+
+    let cancelled = false;
+    void fetchUserProfile(user.id, user.email ?? '').then((row) => {
+      if (!cancelled) setProfile(row);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.email]);
+
+  useEffect(() => {
     subscribe();
     return () => unsubscribe();
   }, [subscribe, unsubscribe]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!user?.id) return;
       fetchGroups();
       loadDashboard(true);
       refreshPendingActions();
-    }, [fetchGroups, loadDashboard, refreshPendingActions])
+    }, [user?.id, fetchGroups, loadDashboard, refreshPendingActions])
   );
 
   useEffect(() => {
     if (!showConverted || summary.groupBalances.length === 0) {
-      setConvertedTotal(null);
-      setIsConvertingTotal(false);
+      setConvertedSummary({ net: null, youOwe: null, owedToYou: null });
+      setIsConverting(false);
       return;
     }
 
     const hasForeign = summary.groupBalances.some(
-      (g) => g.group.currency.toUpperCase() !== defaultCurrency.toUpperCase()
+      (item) =>
+        item.group.currency.toUpperCase() !== defaultCurrency.toUpperCase()
     );
+
     if (!hasForeign) {
-      setConvertedTotal(summary.totalBalance);
-      setIsConvertingTotal(false);
+      setConvertedSummary({
+        net: summary.totalBalance,
+        youOwe: summary.totalYouOwe,
+        owedToYou: summary.totalOwedToYou,
+      });
+      setIsConverting(false);
       return;
     }
 
     let cancelled = false;
-    setIsConvertingTotal(true);
+    setIsConverting(true);
 
-    convertCurrencyBatch(
-      summary.groupBalances.map((item) => ({
-        amount: item.netBalance,
-        fromCurrency: item.group.currency,
-      })),
-      defaultCurrency
-    )
-      .then((total) => {
+    Promise.all([
+      convertCurrencyBatch(
+        summary.groupBalances.map((item) => ({
+          amount: item.netBalance,
+          fromCurrency: item.group.currency,
+        })),
+        defaultCurrency
+      ),
+      convertCurrencyBatch(
+        summary.groupBalances
+          .filter((item) => item.netBalance < -BALANCE_ZERO_THRESHOLD)
+          .map((item) => ({
+            amount: Math.abs(item.netBalance),
+            fromCurrency: item.group.currency,
+          })),
+        defaultCurrency
+      ),
+      convertCurrencyBatch(
+        summary.groupBalances
+          .filter((item) => item.netBalance > BALANCE_ZERO_THRESHOLD)
+          .map((item) => ({
+            amount: item.netBalance,
+            fromCurrency: item.group.currency,
+          })),
+        defaultCurrency
+      ),
+    ])
+      .then(([net, youOwe, owedToYou]) => {
         if (!cancelled) {
-          setConvertedTotal(total);
+          setConvertedSummary({
+            net,
+            youOwe: youOwe ?? 0,
+            owedToYou: owedToYou ?? 0,
+          });
         }
       })
       .finally(() => {
-        if (!cancelled) {
-          setIsConvertingTotal(false);
-        }
+        if (!cancelled) setIsConverting(false);
       });
 
     return () => {
@@ -120,22 +201,25 @@ export default function DashboardScreen() {
   }, [summary, defaultCurrency, showConverted]);
 
   const handleRefresh = useCallback(() => {
+    if (!user?.id) return;
     setIsRefreshing(true);
     fetchGroups();
     loadDashboard(true);
     refreshPendingActions();
-  }, [fetchGroups, loadDashboard, refreshPendingActions]);
+  }, [user?.id, fetchGroups, loadDashboard, refreshPendingActions]);
 
   const activeGroups = useMemo(() => {
     const balanceById = Object.fromEntries(
-      summary.groupBalances.map((item) => [item.group.id, item.netBalance])
+      summary.groupBalances.map((item) => [item.group.id, item])
     );
     const merged = new Map<string, GroupBalanceSummary>();
 
     for (const group of storeGroups) {
+      const existing = balanceById[group.id];
       merged.set(group.id, {
         group,
-        netBalance: balanceById[group.id] ?? 0,
+        netBalance: existing?.netBalance ?? 0,
+        lastActiveAt: existing?.lastActiveAt ?? null,
       });
     }
 
@@ -157,10 +241,27 @@ export default function DashboardScreen() {
   const hasNoGroups =
     storeGroups.length === 0 && summary.groupBalances.length === 0;
 
+  function handleSettleUp() {
+    const owingGroups = activeGroups
+      .filter((item) => item.netBalance < -BALANCE_ZERO_THRESHOLD)
+      .sort((a, b) => a.netBalance - b.netBalance);
+
+    if (owingGroups.length === 0) {
+      Alert.alert(
+        'Nothing to settle',
+        'You do not owe anyone across your active groups.'
+      );
+      return;
+    }
+
+    router.push(`/group/${owingGroups[0].group.id}/settle`);
+  }
+
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar
-        showNotifications
+      <DashboardHeader
+        displayName={displayName}
+        avatarUrl={profile?.avatar_url}
         notificationCount={notificationCount}
         onNotificationsPress={openNotifications}
       />
@@ -173,52 +274,52 @@ export default function DashboardScreen() {
         </View>
       ) : isLoading && hasNoGroups ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : (
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
             paddingHorizontal: 16,
-            paddingTop: 24,
+            paddingTop: 4,
             paddingBottom: 32,
           }}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#0F6E56"
+              tintColor={uiColors.iconOnLight}
             />
           }
         >
-          <View className="mb-lg">
-            <BalanceOverviewCard
-              totalBalance={summary.totalBalance}
-              primaryCurrency={
-                summary.groupBalances[0]?.group.currency ?? defaultCurrency
-              }
-              convertedTotal={convertedTotal}
-              displayCurrency={defaultCurrency}
-              isConverting={isConvertingTotal}
-              showConvertedPrimary={showConverted}
-            />
-          </View>
+          <DashboardBalanceCard
+            netBalance={summary.totalBalance}
+            totalYouOwe={summary.totalYouOwe}
+            totalOwedToYou={summary.totalOwedToYou}
+            currency={primaryCurrency}
+            convertedNetBalance={convertedSummary.net}
+            convertedYouOwe={convertedSummary.youOwe}
+            convertedOwedToYou={convertedSummary.owedToYou}
+            displayCurrency={defaultCurrency}
+            isConverting={isConverting}
+            showConverted={showConverted}
+          />
 
-          <View>
+          <View className="mt-lg">
             <View className="mb-stack-gap flex-row items-center justify-between">
-              <Text className="font-sans-semibold text-headline-sm text-on-surface">
-                Active Groups
+              <Text className="font-sans-medium text-body-lg text-on-surface">
+                Active groups
               </Text>
               <Pressable onPress={() => router.push('/(tabs)/groups')}>
-                <Text className="font-sans-semibold text-label-md text-primary">
-                  View All
+                <Text className="font-sans-medium text-label-md text-brand-primary">
+                  View all
                 </Text>
               </Pressable>
             </View>
 
             {hasNoGroups ? (
-              <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest py-12">
-                <Text className="font-sans-semibold text-body-lg text-on-surface">
+              <View className="items-center rounded-[14px] border border-dashed border-outline-variant bg-surface-container-low px-md py-12">
+                <Text className="font-sans-medium text-body-lg text-on-surface">
                   No groups yet
                 </Text>
                 <Text className="mt-2 px-6 text-center font-sans text-body-md text-on-surface-variant">
@@ -244,22 +345,28 @@ export default function DashboardScreen() {
                 </View>
               </View>
             ) : (
-              <View className="gap-stack-gap">
-                {activeGroups.map(({ group, netBalance }) => (
-                  <GroupCard
+              <View>
+                {activeGroups.map(({ group, netBalance, lastActiveAt }) => (
+                  <DashboardGroupCard
                     key={group.id}
                     group={group}
                     netBalance={netBalance}
-                    pendingActionCount={countByGroupId[group.id] ?? 0}
+                    lastActiveAt={lastActiveAt}
                     onPress={() => router.push(`/group/${group.id}`)}
                   />
                 ))}
               </View>
             )}
           </View>
+
+          <View className="mt-lg">
+            <DashboardQuickActions
+              onAddExpense={() => router.push('/expense/add')}
+              onSettleUp={handleSettleUp}
+            />
+          </View>
         </ScrollView>
       )}
-
     </View>
   );
 }

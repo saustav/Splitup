@@ -13,6 +13,7 @@ import {
 
 import { AddExpenseForm } from '@/components/AddExpenseForm';
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import {
   getPushNotificationHelpMessage,
   registerForPushNotifications,
@@ -154,11 +155,11 @@ export default function AddExpenseScreen() {
 
       {!isSupabaseConfigured ? (
         <View className="flex-1 items-center justify-center px-container-margin">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : groups.length === 0 ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">

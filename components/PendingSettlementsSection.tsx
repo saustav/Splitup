@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
 
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { uiColors } from '@/constants/theme';
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
 import { formatMoney } from '@/lib/currency';
 import { platformShadow } from '@/lib/platformShadow';
@@ -130,7 +131,7 @@ export function PendingSettlementsSection({
           style={platformShadow('card')}
         >
           <View className="mb-sm flex-row items-center gap-xs">
-            <MaterialIcons name="schedule" size={18} color="#54534D" />
+            <MaterialIcons name="schedule" size={18} color={uiColors.muted} />
             <Text className="font-sans-semibold text-body-lg text-on-surface">
               Waiting for confirmation
             </Text>

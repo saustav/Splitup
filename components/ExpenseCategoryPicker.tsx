@@ -5,6 +5,7 @@ import {
   EXPENSE_CATEGORIES,
   type ExpenseCategoryId,
 } from '@/constants/expenseCategories';
+import { uiColors } from '@/constants/theme';
 
 export function ExpenseCategoryPicker({
   value,
@@ -33,7 +34,7 @@ export function ExpenseCategoryPicker({
             <MaterialIcons
               name={cat.icon}
               size={16}
-              color={selected ? '#0F6E56' : '#54534D'}
+              color={selected ? uiColors.iconOnLight : uiColors.muted}
             />
             <Text
               className={`font-sans-semibold text-label-md ${

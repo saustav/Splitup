@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppLogo } from '@/components/AppLogo';
+import { uiColors } from '@/constants/theme';
 import { goBackOrHome, HOME_ROUTE } from '@/lib/navigation';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -81,7 +82,7 @@ export function TopAppBar({
               className="flex-row items-center gap-xs rounded-lg py-sm pr-sm active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="arrow-back" size={22} color="#0F6E56" />
+              <MaterialIcons name="arrow-back" size={22} color={uiColors.iconOnLight} />
               <Text className="font-sans-semibold text-label-md text-primary">
                 Back
               </Text>
@@ -97,7 +98,7 @@ export function TopAppBar({
               <MaterialIcons
                 name={isDark ? 'light-mode' : 'dark-mode'}
                 size={24}
-                color={isDark ? '#EAF3DE' : '#54534D'}
+                color={isDark ? uiColors.iconOnDark : uiColors.muted}
               />
             </Pressable>
           )}
@@ -134,7 +135,7 @@ export function TopAppBar({
               <MaterialIcons
                 name={notificationCount > 0 ? 'notifications' : 'notifications-none'}
                 size={24}
-                color={notificationCount > 0 ? '#0F6E56' : '#54534D'}
+                color={notificationCount > 0 ? uiColors.iconOnLight : uiColors.muted}
               />
               {notificationCount > 0 ? (
                 <View className="absolute -right-xs -top-xs min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-error px-1">
@@ -155,7 +156,7 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="person-add" size={24} color="#0F6E56" />
+              <MaterialIcons name="person-add" size={24} color={uiColors.iconOnLight} />
             </Pressable>
           ) : null}
           {onMenuPress ? (
@@ -166,7 +167,7 @@ export function TopAppBar({
               className="rounded-full p-2 active:bg-surface-container-high"
               hitSlop={8}
             >
-              <MaterialIcons name="more-vert" size={24} color="#54534D" />
+              <MaterialIcons name="more-vert" size={24} color={uiColors.muted} />
             </Pressable>
           ) : null}
         </View>

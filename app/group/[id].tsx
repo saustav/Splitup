@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { BalanceSummary } from "@/components/BalanceSummary";
+import { uiColors } from "@/constants/theme";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ExpenseCard } from "@/components/ExpenseCard";
 import { GroupDetailHeader } from "@/components/GroupDetailHeader";
@@ -85,7 +86,7 @@ function ExpensesSectionHeader({
           sortAscending ? "Sort expenses oldest first" : "Sort expenses newest first"
         }
       >
-        <MaterialIcons name="sort" size={16} color="#0F6E56" />
+        <MaterialIcons name="sort" size={16} color={uiColors.iconOnLight} />
         <Text className="font-sans-semibold text-label-md text-primary">
           {sortAscending ? "Oldest" : "Newest"}
         </Text>
@@ -272,7 +273,7 @@ export default function GroupDetailScreen() {
       <View className="flex-1 bg-background">
         <TopAppBar title="Group" showBack />
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       </View>
     );
@@ -328,7 +329,7 @@ export default function GroupDetailScreen() {
           <RefreshControl
             refreshing={isLoading && !pageLoading}
             onRefresh={() => loadAll({ silent: true })}
-            tintColor="#0F6E56"
+            tintColor={uiColors.iconOnLight}
           />
         }
         onEndReached={() => void loadMoreExpenses()}
@@ -383,7 +384,7 @@ export default function GroupDetailScreen() {
               />
               {isLoading && expenses.length === 0 ? (
                 <View className="items-center py-12">
-                  <ActivityIndicator size="large" color="#0F6E56" />
+                  <ActivityIndicator size="large" color={uiColors.iconOnLight} />
                 </View>
               ) : expenseCount === 0 ? (
                 <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
@@ -391,7 +392,7 @@ export default function GroupDetailScreen() {
                     <MaterialIcons
                       name="receipt-long"
                       size={28}
-                      color="#0F6E56"
+                      color={uiColors.iconOnLight}
                     />
                   </View>
                   <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
@@ -425,7 +426,7 @@ export default function GroupDetailScreen() {
         ListFooterComponent={
           isLoadingMore ? (
             <View className="items-center py-md">
-              <ActivityIndicator size="small" color="#0F6E56" />
+              <ActivityIndicator size="small" color={uiColors.iconOnLight} />
             </View>
           ) : hasMoreExpenses && expenses.length > 0 ? (
             <Text className="py-sm text-center font-sans text-label-md text-on-surface-variant">

@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pressable, Text, View } from 'react-native';
 
 import { APP_NAME } from '@/constants/app';
+import { uiColors } from '@/constants/theme';
 
 export function AppLogo({
   onPress,
@@ -18,7 +19,7 @@ export function AppLogo({
 
   const content = (
     <View className="flex-row items-center gap-sm">
-      <MaterialIcons name="payments" size={iconSize} color="#0F6E56" />
+      <MaterialIcons name="payments" size={iconSize} color={uiColors.iconOnLight} />
       <Text className={textClass}>{APP_NAME}</Text>
     </View>
   );

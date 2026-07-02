@@ -6,6 +6,7 @@ import {
   expenseCategoryMeta,
   normalizeExpenseCategory,
 } from '@/constants/expenseCategories';
+import { uiColors } from '@/constants/theme';
 import { formatMoney } from '@/lib/currency';
 import { formatExpenseDateCompact } from '@/lib/dates';
 import {
@@ -70,7 +71,7 @@ export function ExpenseCard({
       className="mb-xs flex-row items-center gap-sm rounded-lg border border-outline-variant/40 bg-surface-container-lowest px-sm py-sm active:opacity-90"
     >
       <View className="h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high">
-        <MaterialIcons name={category.icon} size={18} color="#0F6E56" />
+        <MaterialIcons name={category.icon} size={18} color={uiColors.iconOnLight} />
       </View>
 
       <View className="min-w-0 flex-1">
@@ -96,7 +97,7 @@ export function ExpenseCard({
         </Text>
       </View>
 
-      <MaterialIcons name="chevron-right" size={20} color="#54534D" />
+      <MaterialIcons name="chevron-right" size={20} color={uiColors.muted} />
     </Pressable>
   );
 }

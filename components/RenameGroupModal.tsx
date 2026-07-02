@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { AutosaveIndicator } from '@/components/AutosaveIndicator';
+import { uiColors } from '@/constants/theme';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useAutosaveStatus } from '@/hooks/useAutosaveStatus';
 
@@ -73,7 +74,7 @@ export function RenameGroupModal({
             value={name}
             onChangeText={setName}
             placeholder="Group name"
-            placeholderTextColor="#54534D"
+            placeholderTextColor={uiColors.muted}
             editable={!isSaving}
             autoFocus
             className="mt-md rounded-lg border border-outline-variant bg-background px-md py-sm font-sans text-body-lg text-on-surface"

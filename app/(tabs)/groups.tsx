@@ -11,6 +11,7 @@ import {
 
 import { GroupCard } from '@/components/GroupCard';
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import { fetchDashboardSummary } from '@/lib/dashboard';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
@@ -86,7 +87,7 @@ export default function GroupsScreen() {
 
       {isLoading && groups.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : (
         <FlatList

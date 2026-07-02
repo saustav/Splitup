@@ -13,6 +13,7 @@ import {
 import { ActivityCard } from '@/components/ActivityCard';
 import { ActivityFilters } from '@/components/ActivityFilters';
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import {
   activityFilterCounts,
   filterActivities,
@@ -173,14 +174,14 @@ export default function ActivityScreen() {
           <MaterialIcons
             name="search"
             size={20}
-            color="#54534D"
+            color={uiColors.muted}
             style={{ position: 'absolute', left: 14, top: 12, zIndex: 1 }}
           />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search activity…"
-            placeholderTextColor="#54534D"
+            placeholderTextColor={uiColors.muted}
             className="rounded-full border border-outline-variant bg-surface py-sm pl-10 pr-md font-sans text-body-md text-on-surface"
           />
         </View>
@@ -200,7 +201,7 @@ export default function ActivityScreen() {
       <View className="gap-lg pt-lg">
         {isLoadingMore ? (
           <View className="items-center py-md">
-            <ActivityIndicator size="small" color="#0F6E56" />
+            <ActivityIndicator size="small" color={uiColors.iconOnLight} />
             <Text className="mt-sm font-sans text-label-md text-on-surface-variant">
               Loading more…
             </Text>
@@ -253,8 +254,8 @@ export default function ActivityScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#0F6E56"
-            colors={['#0F6E56']}
+            tintColor={uiColors.iconOnLight}
+            colors={[uiColors.iconOnLight]}
             title={isRefreshing ? 'Refreshing…' : undefined}
           />
         }
@@ -264,7 +265,7 @@ export default function ActivityScreen() {
         ListEmptyComponent={
           isLoading ? (
             <View className="items-center py-16">
-              <ActivityIndicator size="large" color="#0F6E56" />
+              <ActivityIndicator size="large" color={uiColors.iconOnLight} />
             </View>
           ) : error ? (
             <View className="rounded-xl bg-error-container p-md">

@@ -16,6 +16,7 @@ import {
   getCurrencyByCode,
   type CurrencyOption,
 } from '@/constants/currencies';
+import { uiColors } from '@/constants/theme';
 
 export function CurrencyPicker({
   value,
@@ -98,7 +99,7 @@ export function CurrencyPicker({
         <MaterialIcons
           name="expand-more"
           size={24}
-          color={isProfile ? '#54534D' : '#737373'}
+          color={isProfile ? uiColors.muted : '#737373'}
         />
       </Pressable>
 
@@ -149,7 +150,7 @@ export function CurrencyPicker({
                       </Text>
                     </View>
                     {isSelected ? (
-                      <MaterialIcons name="check-circle" size={22} color="#16a34a" />
+                      <MaterialIcons name="check-circle" size={22} color={uiColors.iconOnLight} />
                     ) : null}
                   </Pressable>
                 );

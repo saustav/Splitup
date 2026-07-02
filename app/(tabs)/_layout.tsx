@@ -54,17 +54,17 @@ export default function TabLayout() {
           />
         )}
       >
-        <Tabs.Screen name="index" options={{ title: 'Groups' }} />
-        <Tabs.Screen name="balances" options={{ title: 'Balances' }} />
-        <Tabs.Screen name="activity" options={{ title: 'Activity' }} />
-        <Tabs.Screen name="account" options={{ title: 'Account' }} />
+        <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen
-          name="groups"
+          name="balances"
           options={{
-            title: 'All Groups',
+            title: 'Balances',
             href: null,
           }}
         />
+        <Tabs.Screen name="activity" options={{ title: 'Activity' }} />
+        <Tabs.Screen name="account" options={{ title: 'Account' }} />
+        <Tabs.Screen name="groups" options={{ title: 'Groups' }} />
       </Tabs>
 
       <AddActionSheet

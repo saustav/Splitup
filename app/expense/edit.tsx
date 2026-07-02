@@ -13,6 +13,7 @@ import {
 import { AddExpenseForm } from '@/components/AddExpenseForm';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import { canEditExpense } from '@/lib/expenseForm';
 import { getErrorMessage } from '@/lib/errors';
 import {
@@ -170,7 +171,7 @@ export default function EditExpenseScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : !canEdit ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { APP_NAME } from '@/constants/app';
+import { uiColors } from '@/constants/theme';
 import { copyText, shareContent } from '@/lib/clipboardShare';
 import { getErrorMessage } from '@/lib/errors';
 import { createGroupInvite } from '@/lib/invites';
@@ -158,7 +159,7 @@ export function InviteFriendsModal({
 
           {isLoading && !code ? (
             <View className="mt-6 items-center py-8">
-              <ActivityIndicator size="large" color="#16a34a" />
+              <ActivityIndicator size="large" color={uiColors.iconOnLight} />
             </View>
           ) : code && inviteUrl ? (
             <Pressable
@@ -181,7 +182,7 @@ export function InviteFriendsModal({
                   <MaterialIcons
                     name={copiedField === 'code' ? 'check-circle' : 'content-copy'}
                     size={16}
-                    color={copiedField === 'code' ? '#0F6E56' : '#54534D'}
+                    color={copiedField === 'code' ? uiColors.iconOnLight : uiColors.muted}
                   />
                   <Text
                     className={`text-xs font-semibold ${
@@ -236,7 +237,7 @@ export function InviteFriendsModal({
                 <MaterialIcons
                   name={copiedField === 'link' ? 'check-circle' : 'link'}
                   size={18}
-                  color={copiedField === 'link' ? '#0F6E56' : '#54534D'}
+                  color={copiedField === 'link' ? uiColors.iconOnLight : uiColors.muted}
                 />
                 <Text
                   className={`text-center font-semibold ${

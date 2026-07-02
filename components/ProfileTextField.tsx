@@ -1,5 +1,7 @@
 import { Text, TextInput, View } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
+
 export function ProfileTextField({
   label,
   value,
@@ -29,7 +31,7 @@ export function ProfileTextField({
         onChangeText={onChangeText}
         onBlur={onBlur}
         placeholder={placeholder}
-        placeholderTextColor="#54534D"
+        placeholderTextColor={uiColors.muted}
         keyboardType={keyboardType}
         editable={editable}
         autoCapitalize={autoCapitalize}

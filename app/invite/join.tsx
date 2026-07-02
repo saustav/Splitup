@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import { readClipboardText } from '@/lib/clipboardShare';
 import { getErrorMessage } from '@/lib/errors';
 import { acceptGroupInvite, normalizeInviteCode } from '@/lib/invites';
@@ -116,9 +117,9 @@ export default function JoinWithCodeScreen() {
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
                 {isPasting ? (
-                  <ActivityIndicator size="small" color="#0F6E56" />
+                  <ActivityIndicator size="small" color={uiColors.iconOnLight} />
                 ) : (
-                  <MaterialIcons name="content-paste" size={18} color="#0F6E56" />
+                  <MaterialIcons name="content-paste" size={18} color={uiColors.iconOnLight} />
                 )}
                 <Text className="font-sans-semibold text-label-md text-primary">
                   Paste
@@ -129,7 +130,7 @@ export default function JoinWithCodeScreen() {
               <MaterialIcons
                 name="vpn-key"
                 size={20}
-                color="#54534D"
+                color={uiColors.muted}
                 style={{ position: 'absolute', left: 12, top: 14, zIndex: 1 }}
               />
               <TextInput
@@ -139,7 +140,7 @@ export default function JoinWithCodeScreen() {
                   setError(null);
                 }}
                 placeholder="e.g. F4BBB812 or invite link"
-                placeholderTextColor="#54534D"
+                placeholderTextColor={uiColors.muted}
                 autoCapitalize="characters"
                 autoCorrect={false}
                 editable={!isJoining}

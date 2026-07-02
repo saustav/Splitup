@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
 import { formatActivityTime, type ActivityItem } from '@/lib/activity';
 import { platformShadow } from '@/lib/platformShadow';
 
@@ -15,19 +16,19 @@ function iconConfig(type: ActivityItem['type']): {
       return {
         name: 'receipt-long',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#0F6E56',
+        iconColor: uiColors.iconOnLight,
       };
     case 'expense_updated':
       return {
         name: 'edit',
         containerClass: 'bg-surface-container-highest',
-        iconColor: '#0F6E56',
+        iconColor: uiColors.iconOnLight,
       };
     case 'expense_deleted':
       return {
         name: 'delete-outline',
         containerClass: 'bg-surface-variant',
-        iconColor: '#54534D',
+        iconColor: uiColors.muted,
       };
     case 'payment':
       return {
@@ -51,7 +52,7 @@ function iconConfig(type: ActivityItem['type']): {
       return {
         name: 'check-circle',
         containerClass: 'bg-surface-variant',
-        iconColor: '#54534D',
+        iconColor: uiColors.muted,
       };
     case 'settlement_pending':
       return {
@@ -202,7 +203,7 @@ export function ActivityCard({
         onPress={handlePress}
         className="self-center rounded p-xs active:bg-surface-container"
       >
-        <MaterialIcons name="chevron-right" size={20} color="#0F6E56" />
+        <MaterialIcons name="chevron-right" size={20} color={uiColors.iconOnLight} />
       </Pressable>
     </Pressable>
   );

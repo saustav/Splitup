@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ScrollView, Text, View } from 'react-native';
 
 import { ConvertedAmountLabel } from '@/components/ConvertedAmountLabel';
+import { uiColors } from '@/constants/theme';
 import { balanceTone, isEffectivelyZero } from '@/lib/balanceDisplay';
 import { formatMoney } from '@/lib/currency';
 import { platformShadow } from '@/lib/platformShadow';
@@ -20,7 +21,7 @@ export function BalanceSummary({
     return (
       <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
         <View className="mb-sm h-12 w-12 items-center justify-center rounded-full bg-surface-container">
-          <MaterialIcons name="account-balance-wallet" size={26} color="#54534D" />
+          <MaterialIcons name="account-balance-wallet" size={26} color={uiColors.muted} />
         </View>
         <Text className="text-center font-sans-semibold text-body-md text-on-surface">
           No balances yet

@@ -10,6 +10,7 @@ import {
 
 import { ExpenseDetailView } from '@/components/ExpenseDetailView';
 import { TopAppBar } from '@/components/TopAppBar';
+import { uiColors } from '@/constants/theme';
 import { canEditExpense } from '@/lib/expenseForm';
 import { getErrorMessage } from '@/lib/errors';
 import { fetchExpenseById } from '@/lib/expenses';
@@ -100,7 +101,7 @@ export default function ExpenseDetailScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0F6E56" />
+          <ActivityIndicator size="large" color={uiColors.iconOnLight} />
         </View>
       ) : error || !expense ? (
         <View className="flex-1 items-center justify-center gap-md px-container-margin">

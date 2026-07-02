@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Modal, Pressable, Text, View } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
 import { platformShadow } from '@/lib/platformShadow';
 
 function MenuRow({
@@ -16,7 +17,7 @@ function MenuRow({
   disabled?: boolean;
   destructive?: boolean;
 }) {
-  const iconColor = disabled ? '#9ca89f' : destructive ? '#ba1a1a' : '#54534D';
+  const iconColor = disabled ? '#9ca89f' : destructive ? uiColors.error : uiColors.muted;
   const textColor = disabled
     ? 'text-on-surface-variant/50'
     : destructive

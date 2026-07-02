@@ -1,5 +1,7 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 
+import { uiColors } from '@/constants/theme';
+
 import { useCurrencyConversion } from '@/hooks/useCurrencyConversion';
 import { useProfileDisplayCurrency } from '@/hooks/useProfileDisplayCurrency';
 import { balanceTone } from '@/lib/balanceDisplay';
@@ -41,7 +43,7 @@ export function ConvertedAmountLabel({
   if (isLoading) {
     return (
       <View className="mt-xs">
-        <ActivityIndicator size="small" color="#54534D" />
+        <ActivityIndicator size="small" color={uiColors.muted} />
       </View>
     );
   }
