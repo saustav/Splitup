@@ -107,7 +107,7 @@ If your database was created before payment integrations were removed, run `supa
 
 Production URL: **https://splitup.mantradigital.com.np**
 
-Pushes to `main` build `dist/` and upload it to Hostinger via FTP using `.github/workflows/deploy-web.yml`. Only the static export is deployed — source code stays on `main`.
+Pushes to `main` build `dist/` and deploy it to Hostinger via SSH/rsync using `.github/workflows/deploy-web.yml`. Only the static export is deployed — source code stays on `main`.
 
 ### One-time GitHub setup
 
@@ -117,13 +117,14 @@ Pushes to `main` build `dist/` and upload it to Hostinger via FTP using `.github
 | ------ | ----------- |
 | `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
-| `FTP_HOST` | Hostinger FTP hostname (e.g. `ftp.mantradigital.com.np`) |
-| `FTP_USERNAME` | Hostinger FTP username |
-| `FTP_PASSWORD` | Hostinger FTP password |
+| `SSH_HOST` | Hostinger SSH hostname |
+| `SSH_PORT` | SSH port (usually `65002` on Hostinger) |
+| `SSH_USERNAME` | Hostinger SSH username |
+| `SSH_PRIVATE_KEY` | Private key for SSH (full PEM contents) |
 
 ### Hostinger
 
-Files are uploaded to `/domains/mantradigital.com.np/public_html/splitup/` (relative to your FTP home directory). Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
+Files are synced to `/home/u461920479/domains/mantradigital.com.np/public_html/splitup/`. Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
 
 ### Supabase (production)
 
