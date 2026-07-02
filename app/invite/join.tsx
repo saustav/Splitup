@@ -112,7 +112,7 @@ export default function JoinWithCodeScreen() {
               <Pressable
                 onPress={() => void handlePaste()}
                 disabled={isJoining || isPasting}
-                className="flex-row items-center gap-1 rounded-md px-sm py-xs active:bg-surface-container-low disabled:opacity-50"
+                className="flex-row items-center gap-xs rounded-md px-sm py-xs active:bg-surface-container-low disabled:opacity-50"
                 style={Platform.OS === 'web' ? { cursor: 'pointer' } : undefined}
               >
                 {isPasting ? (

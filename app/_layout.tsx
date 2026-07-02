@@ -82,6 +82,7 @@ export default function RootLayout() {
       <Stack.Protected guard={isSignedIn}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="expense/add" />
+        <Stack.Screen name="expense/[expenseId]" />
         <Stack.Screen name="expense/edit" />
         <Stack.Screen name="group/[id]" />
         <Stack.Screen name="group/[id]/settle" />

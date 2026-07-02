@@ -27,6 +27,13 @@ export type ExpenseSplit = {
   } | null;
 };
 
+/** Minimal expense fields used for balance calculation. */
+export type ExpenseBalanceInput = {
+  paid_by: string;
+  amount: number;
+  splits?: Pick<ExpenseSplit, 'user_id' | 'amount_owed'>[];
+};
+
 export type MemberBalance = {
   user_id: string;
   display_name: string;

@@ -177,7 +177,7 @@ export function InviteFriendsModal({
             >
               <View className="flex-row items-center justify-between">
                 <Text className="text-sm text-neutral-500">Invite code</Text>
-                <View className="flex-row items-center gap-1">
+                <View className="flex-row items-center gap-xs">
                   <MaterialIcons
                     name={copiedField === 'code' ? 'check-circle' : 'content-copy'}
                     size={16}
@@ -226,7 +226,7 @@ export function InviteFriendsModal({
                 accessibilityLabel={
                   copiedField === 'link' ? 'Invite link copied' : 'Copy invite link'
                 }
-                className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-xl border py-3 active:opacity-80 ${
+                className={`flex-1 flex-row items-center justify-center gap-xs rounded-xl border py-md active:opacity-80 ${
                   copiedField === 'link'
                     ? 'border-primary bg-secondary-container'
                     : 'border-neutral-200 dark:border-neutral-700'

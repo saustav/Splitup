@@ -36,6 +36,22 @@ export function formatExpenseDate(
   });
 }
 
+/** Shorter label for expense lists. */
+export function formatExpenseDateCompact(
+  value: Date | string,
+  locale = 'en-NP'
+): string {
+  const date = typeof value === 'string' ? parseISODate(value) : value;
+  const now = new Date();
+  const sameYear = date.getFullYear() === now.getFullYear();
+
+  return date.toLocaleDateString(locale, {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}
+
 export function startOfMonth(date: Date): Date {
   return startOfDay(new Date(date.getFullYear(), date.getMonth(), 1));
 }

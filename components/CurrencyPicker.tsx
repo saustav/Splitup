@@ -73,7 +73,7 @@ export function CurrencyPicker({
               className={
                 isProfile
                   ? 'font-sans text-body-md text-on-surface'
-                  : 'mt-0.5 text-base text-neutral-900 dark:text-white'
+                  : 'mt-xs text-base text-neutral-900 dark:text-white'
               }
             >
               {selected.flag} {selected.code} ({selected.symbol})
@@ -83,7 +83,7 @@ export function CurrencyPicker({
               className={
                 isProfile
                   ? 'font-sans text-body-md text-on-surface-variant'
-                  : 'mt-0.5 text-base text-neutral-500'
+                  : 'mt-xs text-base text-neutral-500'
               }
             >
               Select currency

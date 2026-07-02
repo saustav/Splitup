@@ -59,7 +59,7 @@ export function ActivityFilters({
                 {f.label}
               </Text>
               {f.id !== 'all' && count > 0 ? (
-                <View className="rounded-full bg-surface-container-high px-2 py-0.5">
+                <View className="rounded-full bg-surface-container-high px-sm py-xs">
                   <Text className="font-sans-semibold text-label-md text-on-surface-variant">
                     {count}
                   </Text>

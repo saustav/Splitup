@@ -1,5 +1,5 @@
 import { normalizeExpenseCategory } from '@/constants/expenseCategories';
-import type { Expense, ExpenseSplit } from '@/types/expense';
+import type { Expense, ExpenseBalanceInput, ExpenseSplit } from '@/types/expense';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 function normalizeExpense(row: Record<string, unknown>): Expense {
@@ -50,6 +50,21 @@ const expenseSelect = `
   )
 `;
 
+const expenseBalanceSelect = `
+  paid_by,
+  amount,
+  splits:expense_splits ( user_id, amount_owed )
+`;
+
+export const EXPENSES_PAGE_SIZE = 20;
+
+export type ExpensePage = {
+  expenses: Expense[];
+  hasMore: boolean;
+};
+
+export type { ExpenseBalanceInput };
+
 export async function fetchExpenseById(expenseId: string): Promise<Expense | null> {
   if (!isSupabaseConfigured) return null;
 
@@ -65,6 +80,77 @@ export async function fetchExpenseById(expenseId: string): Promise<Expense | nul
   }
 
   return normalizeExpense(data as Record<string, unknown>);
+}
+
+export async function fetchGroupExpenseCount(groupId: string): Promise<number> {
+  if (!isSupabaseConfigured) return 0;
+
+  const { count, error } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true })
+    .eq('group_id', groupId);
+
+  if (error) throw error;
+
+  return count ?? 0;
+}
+
+export async function fetchGroupExpensesForBalances(
+  groupId: string
+): Promise<ExpenseBalanceInput[]> {
+  if (!isSupabaseConfigured) return [];
+
+  const { data, error } = await supabase
+    .from('expenses')
+    .select(expenseBalanceSelect)
+    .eq('group_id', groupId);
+
+  if (error) throw error;
+
+  return (data ?? []).map((row) => ({
+    paid_by: row.paid_by as string,
+    amount: Number(row.amount),
+    splits: ((row.splits as ExpenseBalanceInput['splits']) ?? []).map((s) => ({
+      user_id: s.user_id,
+      amount_owed: Number(s.amount_owed),
+    })),
+  }));
+}
+
+export async function fetchGroupExpensesPage(
+  groupId: string,
+  options: {
+    limit?: number;
+    offset?: number;
+    sortAscending?: boolean;
+  } = {}
+): Promise<ExpensePage> {
+  if (!isSupabaseConfigured) {
+    return { expenses: [], hasMore: false };
+  }
+
+  const limit = options.limit ?? EXPENSES_PAGE_SIZE;
+  const offset = options.offset ?? 0;
+  const ascending = options.sortAscending ?? false;
+
+  const { data, error } = await supabase
+    .from('expenses')
+    .select(expenseSelect)
+    .eq('group_id', groupId)
+    .order('expense_date', { ascending })
+    .order('created_at', { ascending })
+    .range(offset, offset + limit - 1);
+
+  if (error) throw error;
+
+  const expenses = (data ?? []).map((row) =>
+    normalizeExpense(row as Record<string, unknown>)
+  );
+
+  return {
+    expenses,
+    hasMore: expenses.length === limit,
+  };
 }
 
 export async function fetchGroupExpenses(groupId: string): Promise<Expense[]> {

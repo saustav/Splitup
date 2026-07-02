@@ -3,9 +3,9 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
+    FlatList,
     Pressable,
     RefreshControl,
-    ScrollView,
     Text,
     View,
 } from "react-native";
@@ -63,6 +63,37 @@ function SectionHeader({
   );
 }
 
+function ExpensesSectionHeader({
+  sortAscending,
+  onToggleSort,
+  isLoading,
+}: {
+  sortAscending: boolean;
+  onToggleSort: () => void;
+  isLoading: boolean;
+}) {
+  return (
+    <View className="mb-stack-gap flex-row items-center justify-between px-1">
+      <Text className="font-sans-semibold text-headline-sm text-on-surface">
+        Expenses
+      </Text>
+      <Pressable
+        onPress={onToggleSort}
+        disabled={isLoading}
+        className="flex-row items-center gap-xs rounded-full border border-outline-variant px-sm py-xs active:bg-surface-container"
+        accessibilityLabel={
+          sortAscending ? "Sort expenses oldest first" : "Sort expenses newest first"
+        }
+      >
+        <MaterialIcons name="sort" size={16} color="#0F6E56" />
+        <Text className="font-sans-semibold text-label-md text-primary">
+          {sortAscending ? "Oldest" : "Newest"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -85,6 +116,10 @@ export default function GroupDetailScreen() {
   const [isLeaving, setIsLeaving] = useState(false);
 
   const expenses = useExpensesStore((s) => s.expenses);
+  const expenseCount = useExpensesStore((s) => s.expenseCount);
+  const expenseSortAscending = useExpensesStore((s) => s.expenseSortAscending);
+  const hasMoreExpenses = useExpensesStore((s) => s.hasMoreExpenses);
+  const isLoadingMore = useExpensesStore((s) => s.isLoadingMore);
   const members = useExpensesStore((s) => s.members);
   const balances = useExpensesStore((s) => s.balances);
   const pendingSettlements = useExpensesStore((s) => s.pendingSettlements);
@@ -104,6 +139,8 @@ export default function GroupDetailScreen() {
   const isLoading = useExpensesStore((s) => s.isLoading);
   const error = useExpensesStore((s) => s.error);
   const loadForGroup = useExpensesStore((s) => s.loadForGroup);
+  const loadMoreExpenses = useExpensesStore((s) => s.loadMoreExpenses);
+  const toggleExpenseSort = useExpensesStore((s) => s.toggleExpenseSort);
   const subscribe = useExpensesStore((s) => s.subscribe);
   const unsubscribe = useExpensesStore((s) => s.unsubscribe);
   const reset = useExpensesStore((s) => s.reset);
@@ -267,8 +304,17 @@ export default function GroupDetailScreen() {
         onMenuPress={() => setMenuVisible(true)}
       />
 
-      <ScrollView
+      <FlatList
         className="flex-1"
+        data={expenses}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ExpenseCard
+            expense={item}
+            currentUserId={user?.id}
+            memberNameById={memberNameById}
+          />
+        )}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 16,
@@ -276,7 +322,7 @@ export default function GroupDetailScreen() {
           maxWidth: 900,
           width: "100%",
           alignSelf: "center",
-          gap: 24,
+          flexGrow: 1,
         }}
         refreshControl={
           <RefreshControl
@@ -285,103 +331,111 @@ export default function GroupDetailScreen() {
             tintColor="#0F6E56"
           />
         }
-      >
-        <GroupDetailHeader
-          group={group}
-          members={members}
-          yourBalance={yourBalance}
-          expenseCount={expenses.length}
-        />
-
-        {SETTLE_UP_ENABLED ? (
-          <Pressable
-            onPress={() => router.push(`/group/${id}/settle`)}
-            className="flex-row items-center justify-center gap-xs rounded-xl bg-primary py-md active:opacity-90"
-            style={platformShadow("card")}
-          >
-            <MaterialIcons name="payments" size={20} color="#ffffff" />
-            <Text className="font-sans-semibold text-body-md text-on-primary">
-              Settle up
-            </Text>
-          </Pressable>
-        ) : null}
-
-        {SETTLE_UP_ENABLED && enrichedPending.length > 0 ? (
-          <View>
-            <SectionHeader title="Settlements" />
-            <PendingSettlementsSection
-              settlements={enrichedPending}
-              currentUserId={user?.id}
-              currencyCode={group.currency}
-              onUpdated={async () => {
-                await loadForGroup(id!);
-                await refreshPendingActions();
-              }}
+        onEndReached={() => void loadMoreExpenses()}
+        onEndReachedThreshold={0.35}
+        ListHeaderComponent={
+          <View className="gap-section-gap pb-section-gap">
+            <GroupDetailHeader
+              group={group}
+              members={members}
+              yourBalance={yourBalance}
+              expenseCount={expenseCount}
             />
-          </View>
-        ) : null}
 
-        <View>
-          <SectionHeader title="Balances" />
-          <BalanceSummary balances={balances} currencyCode={group.currency} />
-        </View>
-
-        <View>
-          <SectionHeader
-            title="Expenses"
-            actionLabel={expenses.length > 0 ? "+ Add" : undefined}
-            onAction={expenses.length > 0 ? goAddExpense : undefined}
-          />
-          {isLoading && expenses.length === 0 ? (
-            <View className="items-center py-12">
-              <ActivityIndicator size="large" color="#0F6E56" />
-            </View>
-          ) : expenses.length === 0 ? (
-            <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
-              <View className="mb-sm h-14 w-14 items-center justify-center rounded-full bg-surface-container">
-                <MaterialIcons name="receipt-long" size={28} color="#0F6E56" />
-              </View>
-              <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
-                No expenses yet
-              </Text>
-              <Text className="mt-xs text-center font-sans text-body-md text-on-surface-variant">
-                Log a shared bill so everyone can see who paid and who owes.
-              </Text>
+            {SETTLE_UP_ENABLED ? (
               <Pressable
-                onPress={goAddExpense}
-                className="mt-md flex-row items-center gap-xs rounded-full bg-primary px-md py-sm active:opacity-90"
+                onPress={() => router.push(`/group/${id}/settle`)}
+                className="flex-row items-center justify-center gap-xs rounded-xl bg-primary py-md active:opacity-90"
+                style={platformShadow("card")}
               >
-                <MaterialIcons name="add" size={20} color="#ffffff" />
+                <MaterialIcons name="payments" size={20} color="#ffffff" />
                 <Text className="font-sans-semibold text-body-md text-on-primary">
-                  Add expense
+                  Settle up
                 </Text>
               </Pressable>
-            </View>
-          ) : (
-            <View className="gap-stack-gap">
-              {expenses.map((expense) => (
-                <ExpenseCard
-                  key={expense.id}
-                  expense={expense}
+            ) : null}
+
+            {SETTLE_UP_ENABLED && enrichedPending.length > 0 ? (
+              <View>
+                <SectionHeader title="Settlements" />
+                <PendingSettlementsSection
+                  settlements={enrichedPending}
                   currentUserId={user?.id}
-                  memberNameById={memberNameById}
+                  currencyCode={group.currency}
+                  onUpdated={async () => {
+                    await loadForGroup(id!);
+                    await refreshPendingActions();
+                  }}
                 />
-              ))}
+              </View>
+            ) : null}
+
+            <View>
+              <SectionHeader title="Balances" />
+              <BalanceSummary balances={balances} currencyCode={group.currency} />
             </View>
-          )}
-        </View>
 
-        {(error || pageError) && (
-          <View className="rounded-xl bg-error-container p-md">
-            <Text className="text-center font-sans text-body-md text-on-error-container">
-              {error ?? pageError}
-            </Text>
+            <View>
+              <ExpensesSectionHeader
+                sortAscending={expenseSortAscending}
+                onToggleSort={() => void toggleExpenseSort()}
+                isLoading={isLoading && expenses.length === 0}
+              />
+              {isLoading && expenses.length === 0 ? (
+                <View className="items-center py-12">
+                  <ActivityIndicator size="large" color="#0F6E56" />
+                </View>
+              ) : expenseCount === 0 ? (
+                <View className="items-center rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-lg py-lg">
+                  <View className="mb-sm h-14 w-14 items-center justify-center rounded-full bg-surface-container">
+                    <MaterialIcons
+                      name="receipt-long"
+                      size={28}
+                      color="#0F6E56"
+                    />
+                  </View>
+                  <Text className="text-center font-sans-semibold text-body-lg text-on-surface">
+                    No expenses yet
+                  </Text>
+                  <Text className="mt-xs text-center font-sans text-body-md text-on-surface-variant">
+                    Log a shared bill so everyone can see who paid and who owes.
+                  </Text>
+                  <Pressable
+                    onPress={goAddExpense}
+                    className="mt-md flex-row items-center gap-xs rounded-full bg-primary px-md py-sm active:opacity-90"
+                  >
+                    <MaterialIcons name="add" size={20} color="#ffffff" />
+                    <Text className="font-sans-semibold text-body-md text-on-primary">
+                      Add expense
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </View>
+
+            {(error || pageError) && (
+              <View className="rounded-xl bg-error-container p-md">
+                <Text className="text-center font-sans text-body-md text-on-error-container">
+                  {error ?? pageError}
+                </Text>
+              </View>
+            )}
           </View>
-        )}
+        }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View className="items-center py-md">
+              <ActivityIndicator size="small" color="#0F6E56" />
+            </View>
+          ) : hasMoreExpenses && expenses.length > 0 ? (
+            <Text className="py-sm text-center font-sans text-label-md text-on-surface-variant">
+              Scroll for more expenses
+            </Text>
+          ) : null
+        }
+      />
 
-      </ScrollView>
-
-      {expenses.length > 0 ? (
+      {expenseCount > 0 ? (
         <Pressable
           onPress={goAddExpense}
           accessibilityLabel="Add expense"

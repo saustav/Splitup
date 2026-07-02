@@ -96,7 +96,7 @@ export function PendingSettlementsSection({
                 <ConvertedAmountLabel
                   amount={settlement.amount}
                   fromCurrency={currencyCode}
-                  className="mt-0.5 font-sans text-label-md text-on-surface-variant"
+                  className="mt-xs font-sans text-label-md text-on-surface-variant"
                 />
                 <Pressable
                   onPress={() => setConfirmSettlement(settlement)}
@@ -147,7 +147,7 @@ export function PendingSettlementsSection({
               <ConvertedAmountLabel
                 amount={settlement.amount}
                 fromCurrency={currencyCode}
-                className="mt-0.5 font-sans text-label-md text-on-surface-variant"
+                className="mt-xs font-sans text-label-md text-on-surface-variant"
               />
             </View>
           ))}

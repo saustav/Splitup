@@ -1,4 +1,4 @@
-import type { Expense, MemberBalance } from '@/types/expense';
+import type { ExpenseBalanceInput, MemberBalance } from '@/types/expense';
 import type { GroupMember } from '@/types/group';
 import type { Settlement } from '@/types/settlement';
 
@@ -43,7 +43,7 @@ export function settlementAmountForDebt(
  * Completed settlements adjust balances (payer owes less, payee is owed less).
  */
 export function calculateBalances(
-  expenses: Expense[],
+  expenses: ExpenseBalanceInput[],
   members: GroupMember[],
   settlements: Settlement[] = []
 ): MemberBalance[] {

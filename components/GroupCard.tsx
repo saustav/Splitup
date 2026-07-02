@@ -76,7 +76,7 @@ export function GroupCard({
 
       {netBalance !== undefined && tone ? (
         <View className="items-end">
-          <View className="mb-xs flex-row items-center gap-0.5">
+          <View className="mb-xs flex-row items-center gap-xs">
             <MaterialIcons
               name={tone.statusIcon}
               size={16}
