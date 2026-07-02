@@ -28,6 +28,9 @@ jobs:
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
           EXPO_PUBLIC_AUTH_REDIRECT_ORIGIN: ${{ env.APP_WEB_URL }}
 
+      - name: Check dist output
+        run: ls -la dist/
+
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
