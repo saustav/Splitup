@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  APP_WEB_URL: https://splitup.mantradigital.com.np
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,6 +29,7 @@ jobs:
         env:
           EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+          EXPO_PUBLIC_AUTH_REDIRECT_ORIGIN: ${{ env.APP_WEB_URL }}
 
       - name: Add GitHub Pages SPA fallback
         run: cp dist/index.html dist/404.html
@@ -35,3 +39,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          cname: splitup.mantradigital.com.np

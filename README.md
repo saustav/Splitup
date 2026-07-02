@@ -14,7 +14,7 @@ Split bills with friends — built for Nepal with Khalti and eSewa payments.
 | Navigation      | Expo Router                             |
 | Push            | Expo Notifications                      |
 | Payments        | Khalti, eSewa                           |
-| Web hosting     | Vercel                                  |
+| Web hosting     | GitHub Pages (`splitup.mantradigital.com.np`) |
 | Version control | GitHub                                  |
 
 ## Getting started
@@ -108,12 +108,36 @@ Settlements simplify debts (fewest payments) and record payment history. Tap **I
 
 Secret keys must live on the server. Use Supabase Edge Functions to initiate payments and verify webhooks. See `lib/payments/README.md`.
 
-## Deploy web to Vercel
+## Deploy web (GitHub Pages)
 
-1. Push the repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com).
-3. Add environment variables (`EXPO_PUBLIC_*`).
-4. Vercel uses `vercel.json` to run `expo export -p web`.
+Production URL: **https://splitup.mantradigital.com.np**
+
+Pushes to `main` build `dist/` and publish it to the `gh-pages` branch via `.github/workflows/deploy-web.yml`. Only the static export is deployed — source code stays on `main`.
+
+### One-time GitHub setup
+
+1. **Actions secrets** (Settings → Secrets and variables → Actions):
+   - `EXPO_PUBLIC_SUPABASE_URL`
+   - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+2. **GitHub Pages** (Settings → Pages):
+   - Source: branch `gh-pages` / root
+   - Custom domain: `splitup.mantradigital.com.np`
+3. **DNS** (at your domain registrar): point `splitup.mantradigital.com.np` to GitHub Pages (CNAME to `<user>.github.io` or A records per [GitHub docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)).
+
+### Supabase (production)
+
+Under **Auth → URL Configuration**:
+
+- **Site URL:** `https://splitup.mantradigital.com.np`
+- **Redirect URLs:** `https://splitup.mantradigital.com.np/auth/callback`
+
+### Manual deploy
+
+```bash
+npm run build:web
+```
+
+The workflow also copies `index.html` to `404.html` for client-side routing on GitHub Pages.
 
 ## Push notifications
 
