@@ -31,6 +31,12 @@ jobs:
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
+      - name: Ensure Apache config is in dist
+        run: |
+          cp public/.htaccess dist/.htaccess
+          test -f dist/.htaccess
+          echo "dist/.htaccess ready for deploy"
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh

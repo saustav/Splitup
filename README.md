@@ -124,7 +124,7 @@ Pushes to `main` build `dist/` and deploy it to Hostinger via SSH/rsync using `.
 
 ### Hostinger
 
-Files are synced to `/home/u461920479/domains/mantradigital.com.np/public_html/splitup/`. Apache routing is handled by `public/.htaccess` (copied into `dist/` on build). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
+Files are synced to `/home/u461920479/domains/mantradigital.com.np/public_html/splitup/`. Apache routing is handled by `public/.htaccess` — that file **is committed to Git**; each deploy copies it into `dist/` before rsync (`dist/` itself is not in the repo). Ensure **AllowOverride** is enabled for that directory in your Hostinger panel.
 
 ### Supabase (production)
 
