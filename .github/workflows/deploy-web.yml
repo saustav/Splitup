@@ -16,7 +16,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 24
           cache: npm
 
       - run: npm ci
@@ -43,3 +43,6 @@ jobs:
           local-dir: ./dist/
           server-dir: /home/u461920479/domains/mantradigital.com.np/public_html/splitup/
           dangerous-clean-slate: false
+          protocol: ftps
+          port: 21
+          security: loose
