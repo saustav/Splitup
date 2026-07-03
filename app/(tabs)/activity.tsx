@@ -171,8 +171,10 @@ export default function ActivityScreen() {
 
   const listHeader = useMemo(
     () => (
-      <View>
-        <View className="relative mb-lg">
+      <View className="gap-lg">
+        <ActivityFilters active={filter} counts={counts} onChange={setFilter} />
+
+        <View className="relative">
           <MaterialIcons
             name="search"
             size={20}
@@ -189,13 +191,13 @@ export default function ActivityScreen() {
         </View>
 
         {isRefreshing && !isLoading ? (
-          <Text className="mb-sm text-center font-sans text-label-md text-primary">
+          <Text className="text-center font-sans text-label-md text-primary">
             Refreshing from Supabase…
           </Text>
         ) : null}
       </View>
     ),
-    [isLoading, isRefreshing, searchQuery],
+    [counts, filter, isLoading, isRefreshing, searchQuery],
   );
 
   const listFooter = useMemo(
@@ -215,11 +217,9 @@ export default function ActivityScreen() {
             You&apos;re all caught up
           </Text>
         ) : null}
-
-        <ActivityFilters active={filter} counts={counts} onChange={setFilter} />
       </View>
     ),
-    [counts, filter, hasMore, isLoading, isLoadingMore, items.length],
+    [hasMore, isLoading, isLoadingMore, items.length],
   );
 
   return (

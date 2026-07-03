@@ -103,6 +103,18 @@ export const usePendingActionsStore = create<PendingActionsState>((set, get) => 
           get().fetch(userId);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notification_log',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          get().fetch(userId);
+        }
+      )
       .subscribe();
   },
 

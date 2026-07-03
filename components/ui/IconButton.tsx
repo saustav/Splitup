@@ -32,7 +32,7 @@ export function IconButton({
     >
       <MaterialIcons name={icon} size={18} color={uiColors.muted} />
       {showBadge ? (
-        <View className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-error" />
+        <View className="absolute -right-xs -top-xs h-2 w-2 rounded-full bg-error" />
       ) : null}
     </Pressable>
   );

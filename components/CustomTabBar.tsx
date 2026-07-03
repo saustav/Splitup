@@ -56,7 +56,7 @@ export function CustomTabBar({
   const themeMode = useThemeStore((s) => s.mode);
   const isDark = themeMode === 'dark';
   const surfaces = isDark ? semanticSurfaces.dark : semanticSurfaces.light;
-  const activeAccent = isDark ? colors.brand.primary : colors.brand.dark;
+  const activeAccent = isDark ? colors.brand.mint : colors.brand.dark;
 
   return (
     <View
@@ -71,7 +71,7 @@ export function CustomTabBar({
         style={{ maxWidth: layout.contentMaxWidth }}
       >
         <View
-          className="flex-row items-center justify-around rounded-2xl border px-0.5 py-0.5"
+          className="flex-row items-center justify-around rounded-2xl border p-xs"
           style={{
             ...platformShadow('tabBarUp'),
             backgroundColor: surfaces.containerLow,
@@ -86,7 +86,7 @@ export function CustomTabBar({
                   onPress={onAddPress}
                   accessibilityRole="button"
                   accessibilityLabel="Add expense or group"
-                  className="mx-0.5 -mt-2 h-10 w-10 items-center justify-center rounded-full bg-brand-dark active:opacity-85"
+                  className="mx-xs -mt-2 h-10 w-10 items-center justify-center rounded-full bg-brand-600 active:opacity-85"
                   style={platformShadow('fab')}
                 >
                   <MaterialIcons name="add" size={22} color="#ffffff" />
@@ -124,7 +124,7 @@ export function CustomTabBar({
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
-                className="min-w-[48px] flex-1 items-center justify-center rounded-xl px-1 py-1.5 active:opacity-80"
+                className="min-w-[48px] flex-1 items-center justify-center rounded-xl px-xs py-xs active:opacity-80"
                 style={
                   isFocused
                     ? { backgroundColor: surfaces.containerHigh }
@@ -144,7 +144,7 @@ export function CustomTabBar({
                 />
                 {tab.label ? (
                   <Text
-                    className={`mt-px font-sans text-[9px] leading-3 ${
+                    className={`mt-xs font-sans text-[9px] leading-3 ${
                       isFocused ? 'font-sans-medium' : ''
                     }`}
                     style={{

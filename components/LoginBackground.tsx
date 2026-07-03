@@ -74,7 +74,7 @@ export function LoginBackground({ topInset = 0 }: { topInset?: number }) {
         }}
       />
       <View
-        className="absolute rounded-full bg-brand-dark/8"
+        className="absolute rounded-full bg-brand-600/8"
         style={{
           top: topInset + 100,
           left: -36,
@@ -104,7 +104,7 @@ export function LoginBackground({ topInset = 0 }: { topInset?: number }) {
         }}
       />
       <View
-        className="absolute rounded-full bg-brand-dark/5"
+        className="absolute rounded-full bg-brand-600/5"
         style={{
           bottom: 160,
           right: -40,

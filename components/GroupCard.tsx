@@ -86,7 +86,7 @@ export function GroupCard({
           {meta}
         </Text>
         {pendingActionCount > 0 ? (
-          <Text className="mt-0.5 font-sans-semibold text-label-md text-error">
+          <Text className="mt-xs font-sans-semibold text-label-md text-error">
             {pendingActionCount === 1
               ? 'Confirm payment'
               : `${pendingActionCount} payments to confirm`}
@@ -99,7 +99,7 @@ export function GroupCard({
           <Text className={`font-sans-medium text-body-md ${amountClass}`}>
             {formatSignedAmount(netBalance, group.currency)}
           </Text>
-          <Text className="mt-0.5 font-sans text-label-md text-on-surface-variant">
+          <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
             {dashboardGroupStatusLabel(netBalance)}
           </Text>
           {showConverted ? (

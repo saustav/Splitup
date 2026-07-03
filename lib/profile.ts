@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { DEFAULT_CURRENCY_CODE } from '@/constants/currencies';
+import {
+  DEFAULT_NOTIFICATION_PREFS,
+  parseNotificationPrefs,
+  type NotificationPrefs,
+} from '@/lib/notificationRules';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export type UserProfile = {
@@ -15,12 +20,7 @@ export type ProfilePreferences = {
   defaultCurrency: string;
   /** When true, show ≈ amounts in default currency using live exchange rates. */
   showConvertedToDefaultCurrency: boolean;
-  notifications: {
-    expenseUpdates: boolean;
-    settlements: boolean;
-    groupActivity: boolean;
-    monthlyReports: boolean;
-  };
+  notifications: NotificationPrefs;
   privacy: {
     publicProfile: boolean;
     twoFactorAuth: boolean;
@@ -33,12 +33,7 @@ export const DEFAULT_PROFILE_PREFERENCES: ProfilePreferences = {
   phone: '',
   defaultCurrency: DEFAULT_CURRENCY_CODE,
   showConvertedToDefaultCurrency: true,
-  notifications: {
-    expenseUpdates: true,
-    settlements: true,
-    groupActivity: true,
-    monthlyReports: false,
-  },
+  notifications: { ...DEFAULT_NOTIFICATION_PREFS },
   privacy: {
     publicProfile: true,
     twoFactorAuth: false,
@@ -83,23 +78,72 @@ export async function updateUserProfile(
   if (error) throw error;
 }
 
+export async function fetchNotificationPrefsFromServer(
+  userId: string
+): Promise<NotificationPrefs | null> {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('notification_prefs')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    if (error.code === '42703' || error.message.includes('notification_prefs')) {
+      return null;
+    }
+    throw error;
+  }
+
+  if (!data?.notification_prefs) return null;
+  return parseNotificationPrefs(data.notification_prefs);
+}
+
+export async function saveNotificationPrefsToServer(
+  userId: string,
+  notifications: NotificationPrefs
+): Promise<void> {
+  if (!isSupabaseConfigured) return;
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ notification_prefs: notifications })
+    .eq('id', userId);
+
+  if (error) {
+    if (error.code === '42703' || error.message.includes('notification_prefs')) {
+      return;
+    }
+    throw error;
+  }
+}
+
 export async function loadProfilePreferences(
   userId: string
 ): Promise<ProfilePreferences> {
   try {
-    const raw = await AsyncStorage.getItem(PREFS_KEY(userId));
-    if (!raw) return { ...DEFAULT_PROFILE_PREFERENCES };
-    const parsed = JSON.parse(raw) as Partial<ProfilePreferences>;
+    const [raw, serverNotifications] = await Promise.all([
+      AsyncStorage.getItem(PREFS_KEY(userId)),
+      fetchNotificationPrefsFromServer(userId),
+    ]);
+
+    const localParsed = raw
+      ? (JSON.parse(raw) as Partial<ProfilePreferences>)
+      : null;
+
+    const notifications = serverNotifications ??
+      (localParsed?.notifications
+        ? parseNotificationPrefs(localParsed.notifications)
+        : { ...DEFAULT_NOTIFICATION_PREFS });
+
     return {
       ...DEFAULT_PROFILE_PREFERENCES,
-      ...parsed,
-      notifications: {
-        ...DEFAULT_PROFILE_PREFERENCES.notifications,
-        ...parsed.notifications,
-      },
+      ...localParsed,
+      notifications,
       privacy: {
         ...DEFAULT_PROFILE_PREFERENCES.privacy,
-        ...parsed.privacy,
+        ...localParsed?.privacy,
       },
     };
   } catch {
@@ -112,6 +156,7 @@ export async function saveProfilePreferences(
   prefs: ProfilePreferences
 ): Promise<void> {
   await AsyncStorage.setItem(PREFS_KEY(userId), JSON.stringify(prefs));
+  await saveNotificationPrefsToServer(userId, prefs.notifications);
 }
 
 export function displayNameFromProfile(

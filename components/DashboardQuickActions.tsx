@@ -29,7 +29,7 @@ function QuickActionButton({
       className="flex-1 flex-row items-center gap-sm rounded-card border border-outline-variant/40 bg-surface-container-low p-sm active:opacity-90"
     >
       <View
-        className="h-9 w-9 items-center justify-center rounded-[10px]"
+        className="h-9 w-9 items-center justify-center rounded-md"
         style={{ backgroundColor: iconBg }}
       >
         <MaterialIcons name={icon} size={18} color={iconColor} />
@@ -38,7 +38,7 @@ function QuickActionButton({
         <Text className="font-sans-medium text-label-md text-on-surface">
           {title}
         </Text>
-        <Text className="mt-px font-sans text-label-md text-on-surface-variant">
+        <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
           {subtitle}
         </Text>
       </View>
@@ -55,7 +55,7 @@ export function DashboardQuickActions({
       <Text className="mb-sm font-sans-medium text-body-md text-on-surface">
         Quick actions
       </Text>
-      <View className="flex-row gap-[10px]">
+      <View className="flex-row gap-sm">
         <QuickActionButton
           icon="add"
           iconBg={colors.brand.light}

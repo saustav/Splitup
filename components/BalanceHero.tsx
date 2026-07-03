@@ -32,7 +32,7 @@ function BalancePill({
   amountColor: string;
 }) {
   return (
-    <View className="flex-row items-center gap-xs rounded-full bg-white/10 px-sm py-0.5">
+    <View className="flex-row items-center gap-xs rounded-full bg-white/10 px-sm py-xs">
       <MaterialIcons name={icon} size={12} color={amountColor} />
       <Text className="font-sans text-[11px] text-white/65">{label}</Text>
       <Text className="font-sans-medium text-[11px]" style={{ color: amountColor }}>
@@ -70,7 +70,7 @@ export function BalanceHero({
   const mainOwed = useConverted ? convertedOwedToYou : totalOwedToYou;
 
   return (
-    <View className="relative overflow-hidden rounded-hero bg-brand-dark p-md">
+    <View className="relative overflow-hidden rounded-hero bg-brand-600 p-md">
       <View className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/5" />
       <View className="absolute bottom-[-20px] right-4 h-14 w-14 rounded-full bg-white/[0.04]" />
 

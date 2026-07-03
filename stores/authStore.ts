@@ -2,6 +2,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 
 import { clearOAuthParamsFromUrl } from '@/lib/auth';
+import { removePushTokensForUser } from '@/lib/notifications';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useExpensesStore } from '@/stores/expensesStore';
 import { useGroupsStore } from '@/stores/groupsStore';
@@ -71,8 +72,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSigningIn: (value) => set({ isSigningIn: value }),
 
   signOut: async () => {
+    const userId = useAuthStore.getState().user?.id;
     try {
       if (isSupabaseConfigured) {
+        if (userId) {
+          await removePushTokensForUser(userId);
+        }
         await supabase.auth.signOut({ scope: 'local' });
       }
     } finally {

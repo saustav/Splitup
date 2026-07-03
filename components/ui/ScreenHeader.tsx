@@ -51,7 +51,7 @@ export function ScreenHeader({
 
   return (
     <View
-      className="bg-background px-container-margin pb-1.5"
+      className="bg-background px-container-margin pb-sm"
       style={{ paddingTop: insets.top + 8 }}
     >
       <View className="min-h-[34px] flex-row items-center justify-between">

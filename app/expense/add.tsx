@@ -14,10 +14,6 @@ import {
 import { AddExpenseForm } from '@/components/AddExpenseForm';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { uiColors } from '@/constants/theme';
-import {
-  getPushNotificationHelpMessage,
-  registerForPushNotifications,
-} from '@/lib/notifications';
 import { createExpense } from '@/lib/expenses';
 import { fetchGroupMembers, fetchUserGroups } from '@/lib/groups';
 import { goBackOrHome } from '@/lib/navigation';
@@ -33,6 +29,8 @@ export default function AddExpenseScreen() {
   const router = useRouter();
   const { groupId: initialGroupId } = useLocalSearchParams<{ groupId?: string }>();
   const user = useAuthStore((s) => s.user);
+  const notificationCount = usePendingActionsStore((s) => s.totalCount);
+  const openNotifications = usePendingActionsStore((s) => s.openSheet);
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [groupId, setGroupId] = useState(initialGroupId ?? '');
@@ -98,16 +96,6 @@ export default function AddExpenseScreen() {
     };
   }, [groupId]);
 
-  async function handleEnableNotifications() {
-    const token = await registerForPushNotifications();
-    Alert.alert(
-      token ? 'Notifications enabled' : 'Could not enable notifications',
-      token
-        ? 'Your device is registered for expense alerts.'
-        : getPushNotificationHelpMessage()
-    );
-  }
-
   async function handleSubmit(params: {
     description: string;
     amount: number;
@@ -150,8 +138,8 @@ export default function AddExpenseScreen() {
         variant="stack"
         title="Add expense"
         showBack
-        hasNotifications
-        onNotificationsPress={handleEnableNotifications}
+        notificationCount={notificationCount}
+        onNotificationsPress={openNotifications}
       />
 
       {!isSupabaseConfigured ? (

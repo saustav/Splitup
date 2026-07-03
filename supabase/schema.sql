@@ -336,6 +336,7 @@ create table public.activity_events (
       'expense_deleted',
       'invite_created',
       'member_joined',
+      'member_left',
       'settlement_pending',
       'settlement_completed'
     )
@@ -951,3 +952,4 @@ grant execute on function public.accept_settlement(uuid) to authenticated;
 -- alter publication supabase_realtime add table public.expense_splits;
 -- alter publication supabase_realtime add table public.settlements;
 -- alter publication supabase_realtime add table public.activity_events;
+-- alter publication supabase_realtime add table public.notification_log;

@@ -40,7 +40,7 @@ export function GroupDetailHeader({
             <Text className="font-sans-medium text-headline-sm text-on-surface">
               {group.name}
             </Text>
-            <Text className="mt-0.5 font-sans text-label-md text-on-surface-variant">
+            <Text className="mt-xs font-sans text-label-md text-on-surface-variant">
               {members.length} member{members.length === 1 ? '' : 's'}
               {' · '}
               {currencyMeta?.flag ?? '🌐'} {group.currency}

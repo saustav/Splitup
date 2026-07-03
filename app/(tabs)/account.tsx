@@ -17,7 +17,7 @@ import { useAutosaveStatus } from "@/hooks/useAutosaveStatus";
 import {
   canRegisterForPushNotifications,
   getPushNotificationHelpMessage,
-  registerForPushNotifications,
+  registerAndSavePushToken,
 } from "@/lib/notifications";
 import {
     DEFAULT_PROFILE_PREFERENCES,
@@ -157,11 +157,12 @@ export default function AccountScreen() {
   }
 
   async function handleEnableNotifications() {
-    const token = await registerForPushNotifications();
+    if (!user?.id) return;
+    const token = await registerAndSavePushToken(user.id);
     Alert.alert(
       token ? "Notifications enabled" : "Could not enable notifications",
       token
-        ? "Your device is registered for expense alerts."
+        ? "Your device is registered for alerts."
         : getPushNotificationHelpMessage(),
     );
   }

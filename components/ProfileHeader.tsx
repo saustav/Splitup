@@ -46,7 +46,7 @@ export function ProfileHeader({
           {name}
         </Text>
         <Text
-          className="mt-0.5 font-sans text-label-md text-on-surface-variant"
+          className="mt-xs font-sans text-label-md text-on-surface-variant"
           numberOfLines={1}
         >
           {email}

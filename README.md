@@ -143,4 +143,4 @@ Then upload everything inside `dist/` to your Hostinger document root (same path
 
 ## Push notifications
 
-Call `registerForPushNotifications()` from `lib/notifications.ts` after the user signs in, then save the Expo push token to Supabase.
+After sign-in, the app calls `registerAndSavePushToken()` from `lib/notifications.ts`, which stores the Expo push token in Supabase `push_tokens`. See [`supabase/NOTIFICATIONS_SETUP.md`](supabase/NOTIFICATIONS_SETUP.md) for Edge Function deployment, webhooks, and EAS configuration.

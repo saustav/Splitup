@@ -228,19 +228,9 @@ export async function leaveGroup(groupId: string): Promise<void> {
     throw new Error("Supabase is not configured");
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Not authenticated");
-  }
-
-  const { error } = await supabase
-    .from("group_members")
-    .delete()
-    .eq("group_id", groupId)
-    .eq("user_id", user.id);
+  const { error } = await supabase.rpc('leave_group', {
+    p_group_id: groupId,
+  });
 
   if (error) throw error;
 }

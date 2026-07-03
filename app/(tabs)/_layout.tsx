@@ -6,10 +6,12 @@ import { CreateGroupModal } from '@/components/CreateGroupModal';
 import { CustomTabBar } from '@/components/CustomTabBar';
 import { PendingActionsSheet } from '@/components/PendingActionsSheet';
 import { usePendingPaymentActionsBootstrap } from '@/hooks/usePendingPaymentActions';
+import { usePushNotificationsBootstrap } from '@/hooks/usePushNotifications';
 import { useGroupsStore } from '@/stores/groupsStore';
 
 export default function TabLayout() {
   usePendingPaymentActionsBootstrap();
+  usePushNotificationsBootstrap();
   const router = useRouter();
   const [addSheetVisible, setAddSheetVisible] = useState(false);
 

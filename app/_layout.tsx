@@ -21,6 +21,7 @@ if (__DEV__ && Platform.OS === 'web') {
 }
 
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { usePushNotificationNavigation } from '@/hooks/usePushNotificationNavigation';
 import { urlHasOAuthPayload } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
@@ -45,6 +46,8 @@ export default function RootLayout() {
   const router = useRouter();
   const isOAuthCallback =
     pathname === '/auth/callback' || pathname?.endsWith('/auth/callback');
+
+  usePushNotificationNavigation();
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
